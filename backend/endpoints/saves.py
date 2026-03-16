@@ -96,15 +96,11 @@ def _resolve_device(
     return device
 
 
-def _increment_session_counter(session_id: int, user_id: int) -> None:
+def _increment_session_counter(session_id: int) -> None:
     try:
-        session = db_sync_session_handler.get_session(
-            session_id=session_id, user_id=user_id
+        db_sync_session_handler.increment_operations_completed(
+            session_id=session_id,
         )
-        if session:
-            db_sync_session_handler.increment_operations_completed(
-                session_id=session_id,
-            )
     except Exception:
         log.warning(f"Failed to update sync session {session_id}", exc_info=True)
 
@@ -260,7 +256,7 @@ async def add_save(
         db_device_handler.update_last_seen(device_id=device.id, user_id=request.user.id)
 
     if session_id:
-        _increment_session_counter(session_id, request.user.id)
+        _increment_session_counter(session_id)
 
     if slot and autocleanup:
         slot_saves = db_save_handler.get_saves(
@@ -457,7 +453,7 @@ def download_save(
         db_device_handler.update_last_seen(device_id=device.id, user_id=request.user.id)
 
     if session_id:
-        _increment_session_counter(session_id, request.user.id)
+        _increment_session_counter(session_id)
 
     return FileResponse(path=str(file_path), filename=save.file_name)
 

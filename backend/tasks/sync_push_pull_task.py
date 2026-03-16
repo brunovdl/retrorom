@@ -80,6 +80,9 @@ async def _sync_device(device: Device, session_id: int | None = None) -> dict:
             session_id=session_id, user_id=device.user_id
         )
         if not sync_session:
+            log.warning(
+                f"Push-pull: session {session_id} not found, creating new session"
+            )
             sync_session = db_sync_session_handler.create_session(
                 device_id=device.id, user_id=device.user_id
             )

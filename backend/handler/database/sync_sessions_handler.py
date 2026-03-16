@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from datetime import datetime, timezone
 
 from sqlalchemy import select, update
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from decorators.database import begin_session
@@ -75,7 +76,10 @@ class DBSyncSessionsHandler(DBBaseHandler):
             .values(**data)
             .execution_options(synchronize_session="evaluate")
         )
-        return session.scalar(select(SyncSession).filter_by(id=session_id))
+        result = session.scalar(select(SyncSession).filter_by(id=session_id))
+        if not result:
+            raise NoResultFound(f"SyncSession {session_id} not found after update")
+        return result
 
     @begin_session
     def increment_operations_completed(
@@ -111,7 +115,10 @@ class DBSyncSessionsHandler(DBBaseHandler):
             )
             .execution_options(synchronize_session="evaluate")
         )
-        return session.scalar(select(SyncSession).filter_by(id=session_id))
+        result = session.scalar(select(SyncSession).filter_by(id=session_id))
+        if not result:
+            raise NoResultFound(f"SyncSession {session_id} not found after complete")
+        return result
 
     @begin_session
     def fail_session(
@@ -130,7 +137,10 @@ class DBSyncSessionsHandler(DBBaseHandler):
             )
             .execution_options(synchronize_session="evaluate")
         )
-        return session.scalar(select(SyncSession).filter_by(id=session_id))
+        result = session.scalar(select(SyncSession).filter_by(id=session_id))
+        if not result:
+            raise NoResultFound(f"SyncSession {session_id} not found after fail")
+        return result
 
     @begin_session
     def cancel_active_sessions(
