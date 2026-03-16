@@ -391,3 +391,142 @@ class TestPushPullTrigger:
             headers={"Authorization": f"Bearer {access_token}"},
         )
         assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_trigger_push_pull_passes_session_id(
+        self, client, access_token: str, admin_user: User
+    ):
+        device = db_device_handler.add_device(
+            Device(
+                id="pp-dev-sid",
+                user_id=admin_user.id,
+                sync_mode=SyncMode.PUSH_PULL,
+                sync_enabled=True,
+            )
+        )
+
+        with mock.patch("endpoints.sync.high_prio_queue") as mock_queue:
+            response = client.post(
+                f"/api/sync/devices/{device.id}/push-pull",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+
+        assert response.status_code == status.HTTP_200_OK
+        call_kwargs = mock_queue.enqueue.call_args
+        assert "session_id" in call_kwargs.kwargs
+
+
+class TestNegotiateAdvanced:
+    def test_negotiate_untracked_save_returns_noop(
+        self, client, access_token: str, admin_user: User, save: Save
+    ):
+        device = db_device_handler.add_device(
+            Device(id="neg-untrack-dev", user_id=admin_user.id, sync_enabled=True)
+        )
+        db_device_save_sync_handler.set_untracked(
+            device_id=device.id, save_id=save.id, untracked=True
+        )
+
+        response = client.post(
+            "/api/sync/negotiate",
+            json={
+                "device_id": device.id,
+                "saves": [
+                    {
+                        "rom_id": save.rom_id,
+                        "file_name": save.file_name,
+                        "content_hash": "different_hash",
+                        "updated_at": "2026-03-01T00:00:00Z",
+                        "file_size_bytes": 100,
+                    }
+                ],
+            },
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        noop_ops = [op for op in data["operations"] if op["action"] == "no_op"]
+        assert len(noop_ops) >= 1
+
+    def test_negotiate_server_save_not_mentioned_by_client(
+        self, client, access_token: str, admin_user: User, save: Save
+    ):
+        device = db_device_handler.add_device(
+            Device(id="neg-miss-dev", user_id=admin_user.id, sync_enabled=True)
+        )
+
+        response = client.post(
+            "/api/sync/negotiate",
+            json={"device_id": device.id, "saves": []},
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        download_ops = [op for op in data["operations"] if op["action"] == "download"]
+        assert len(download_ops) >= 1
+        assert any(op["save_id"] == save.id for op in download_ops)
+
+    def test_negotiate_deleted_by_client_skipped(
+        self, client, access_token: str, admin_user: User, save: Save
+    ):
+        device = db_device_handler.add_device(
+            Device(id="neg-del-dev", user_id=admin_user.id, sync_enabled=True)
+        )
+        db_device_save_sync_handler.upsert_sync(
+            device_id=device.id,
+            save_id=save.id,
+            synced_at=datetime.now(timezone.utc),
+        )
+
+        response = client.post(
+            "/api/sync/negotiate",
+            json={"device_id": device.id, "saves": []},
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        ops_for_save = [op for op in data["operations"] if op.get("save_id") == save.id]
+        assert len(ops_for_save) == 0
+
+    def test_complete_failed_session_rejected(
+        self, client, access_token: str, admin_user: User
+    ):
+        device = db_device_handler.add_device(
+            Device(id="sess-failed-dev", user_id=admin_user.id)
+        )
+        sync_session = db_sync_session_handler.create_session(
+            device_id=device.id, user_id=admin_user.id
+        )
+        db_sync_session_handler.fail_session(sync_session.id, error_message="test")
+
+        response = client.post(
+            f"/api/sync/sessions/{sync_session.id}/complete",
+            json={"operations_completed": 0, "operations_failed": 0},
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_complete_cancelled_session_rejected(
+        self, client, access_token: str, admin_user: User
+    ):
+        device = db_device_handler.add_device(
+            Device(id="sess-cancel-dev", user_id=admin_user.id)
+        )
+        db_sync_session_handler.create_session(
+            device_id=device.id, user_id=admin_user.id
+        )
+        db_sync_session_handler.cancel_active_sessions(device.id, admin_user.id)
+
+        sessions = db_sync_session_handler.get_sessions(
+            admin_user.id, device_id=device.id
+        )
+        cancelled = sessions[0]
+
+        response = client.post(
+            f"/api/sync/sessions/{cancelled.id}/complete",
+            json={"operations_completed": 0, "operations_failed": 0},
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST

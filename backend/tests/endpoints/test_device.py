@@ -475,3 +475,82 @@ class TestDeviceDuplicateHandling:
         )
 
         assert response.status_code == status.HTTP_201_CREATED
+
+
+class TestSyncConfigMasking:
+    def test_ssh_credentials_masked_in_response(
+        self, client, access_token: str, admin_user: User
+    ):
+        db_device_handler.add_device(
+            Device(
+                id="mask-dev-1",
+                user_id=admin_user.id,
+                name="SSH Device",
+                sync_config={
+                    "ssh_host": "192.168.1.100",
+                    "ssh_port": 22,
+                    "ssh_username": "retro",
+                    "ssh_password": "supersecret123",
+                    "ssh_key_path": "/home/retro/.ssh/id_rsa",
+                    "save_directories": [
+                        {"platform_slug": "gba", "path": "/saves/gba"}
+                    ],
+                },
+            )
+        )
+
+        response = client.get(
+            "/api/devices/mask-dev-1",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        config = response.json()["sync_config"]
+        assert config["ssh_host"] == "192.168.1.100"
+        assert config["ssh_port"] == 22
+        assert config["ssh_username"] == "retro"
+        assert config["ssh_password"] == "********"
+        assert config["ssh_key_path"] == "********"
+        assert config["save_directories"] == [
+            {"platform_slug": "gba", "path": "/saves/gba"}
+        ]
+
+    def test_null_sync_config_passes_through(
+        self, client, access_token: str, admin_user: User
+    ):
+        db_device_handler.add_device(
+            Device(
+                id="mask-dev-2",
+                user_id=admin_user.id,
+                name="No Config Device",
+            )
+        )
+
+        response = client.get(
+            "/api/devices/mask-dev-2",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["sync_config"] is None
+
+    def test_sync_config_without_sensitive_fields(
+        self, client, access_token: str, admin_user: User
+    ):
+        db_device_handler.add_device(
+            Device(
+                id="mask-dev-3",
+                user_id=admin_user.id,
+                sync_config={"ssh_host": "10.0.0.1", "ssh_port": 2222},
+            )
+        )
+
+        response = client.get(
+            "/api/devices/mask-dev-3",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        config = response.json()["sync_config"]
+        assert config["ssh_host"] == "10.0.0.1"
+        assert config["ssh_port"] == 2222

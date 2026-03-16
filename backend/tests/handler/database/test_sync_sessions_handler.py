@@ -1,3 +1,6 @@
+import pytest
+from sqlalchemy.exc import NoResultFound
+
 from handler.database import db_device_handler, db_sync_session_handler
 from models.device import Device
 from models.sync_session import SyncSessionStatus
@@ -124,6 +127,41 @@ class TestFailSession:
         result = db_sync_session_handler.fail_session(created.id)
         assert result.status == SyncSessionStatus.FAILED
         assert result.error_message is None
+
+
+class TestIncrementOperationsCompleted:
+    def test_increments_counter(self, admin_user: User):
+        device = db_device_handler.add_device(
+            Device(id="inc-dev-1", user_id=admin_user.id)
+        )
+        session = db_sync_session_handler.create_session(device.id, admin_user.id)
+        assert session.operations_completed == 0
+
+        db_sync_session_handler.increment_operations_completed(session.id)
+        db_sync_session_handler.increment_operations_completed(session.id)
+        db_sync_session_handler.increment_operations_completed(session.id)
+
+        result = db_sync_session_handler.get_session(session.id, admin_user.id)
+        assert result.operations_completed == 3
+
+    def test_noop_on_nonexistent_session(self, admin_user: User):
+        db_sync_session_handler.increment_operations_completed(999999)
+
+
+class TestNoResultFoundOnMissingSession:
+    def test_update_session_raises(self, admin_user: User):
+        with pytest.raises(NoResultFound):
+            db_sync_session_handler.update_session(
+                999999, {"status": SyncSessionStatus.IN_PROGRESS}
+            )
+
+    def test_complete_session_raises(self, admin_user: User):
+        with pytest.raises(NoResultFound):
+            db_sync_session_handler.complete_session(999999)
+
+    def test_fail_session_raises(self, admin_user: User):
+        with pytest.raises(NoResultFound):
+            db_sync_session_handler.fail_session(999999, error_message="test")
 
 
 class TestCancelActiveSessions:
