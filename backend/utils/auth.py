@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import Request
+from ua_parser import Result as UAResult
 from ua_parser import parse as parse_ua
 
 from handler.database import db_device_handler
@@ -12,24 +13,21 @@ from models.device import KNOWN_DEVICES, Device
 from models.user import User
 
 
-def _parse_platform(user_agent: str) -> str:
+def _get_device_name(user_agent: UAResult) -> str | None:
     """Extract stable browser + OS family from a User-Agent string.
 
     Returns something like "Chrome on Mac OS X" or "Firefox on Windows"
     which won't change across browser version updates.
     """
-    result = parse_ua(user_agent)
-
-    browser = result.user_agent.family if result.user_agent else None
-    os = result.os.family if result.os else None
+    browser = user_agent.user_agent.family if user_agent.user_agent else None
+    os = user_agent.os.family if user_agent.os else None
 
     if browser and os:
         return f"{browser} on {os}"
     if browser:
         return browser
-    if os:
-        return os
-    return "Unknown Browser"
+
+    return os or "Web Browser"
 
 
 def create_or_find_web_device(request: Request, user: User) -> Device:
@@ -40,18 +38,17 @@ def create_or_find_web_device(request: Request, user: User) -> Device:
     """
     device_type = KNOWN_DEVICES["web"]
 
-    user_agent = request.headers.get("user-agent", "")
-    platform = _parse_platform(user_agent)
+    user_agent = parse_ua(request.headers.get("user-agent", ""))
+    client_version = user_agent.user_agent.major if user_agent.user_agent else None
 
     hostname = request.client.host if request.client else None
     ip_address = request.headers.get("x-forwarded-for", None)
 
     existing = db_device_handler.get_device_by_fingerprint(
         user_id=user.id,
-        mac_address=None,
         hostname=hostname,
         ip_address=ip_address,
-        platform=platform,
+        platform=device_type.platform,
     )
     if existing:
         db_device_handler.update_last_seen(device_id=existing.id, user_id=user.id)
@@ -60,9 +57,10 @@ def create_or_find_web_device(request: Request, user: User) -> Device:
     device = Device(
         id=str(uuid.uuid4()),
         user_id=user.id,
-        name=platform,
+        name=_get_device_name(user_agent),
         platform=device_type.platform,
         client=device_type.client,
+        client_version=client_version,
         sync_mode=device_type.sync_mode,
         hostname=hostname,
         ip_address=ip_address,
