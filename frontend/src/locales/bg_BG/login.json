@@ -1,0 +1,16 @@
+{
+  "back-to-login": "Back to login",
+  "confirm-new-password": "Confirm new password",
+  "forgot-password": "Forgot your password?",
+  "login": "Login",
+  "login-oidc": "Login with {oidc}",
+  "new-password": "New password",
+  "or": "or",
+  "password": "Password",
+  "register": "Register",
+  "reset-password": "Reset password",
+  "reset-sent": "Reset link sent. Contact your admin.",
+  "send-reset-link": "Send reset link",
+  "setup-wizard": "Setup wizard",
+  "username": "Username"
+}
