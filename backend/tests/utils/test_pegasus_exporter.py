@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from handler.database import db_platform_handler, db_rom_handler
+from handler.filesystem import fs_resource_handler
 from models.platform import Platform
 from models.rom import Rom, RomMetadata
 from models.user import User
@@ -420,10 +421,9 @@ def test_game_media_dir_name():
     assert exporter._game_media_dir_name(rom) == "Super Mario World (USA)"
 
 
-def test_collect_assets_empty(tmp_path):
+def test_collect_assets_empty():
     """When no resource paths are set, _collect_assets returns empty dict."""
     exporter = PegasusExporter(local_export=True)
-    exporter._resources_path = tmp_path
     rom = _mock_rom(
         path_cover_l=None,
         path_screenshots=None,
@@ -434,10 +434,10 @@ def test_collect_assets_empty(tmp_path):
     assert exporter._collect_assets(rom) == {}
 
 
-def test_collect_assets_with_cover(tmp_path):
-    """Cover is picked up from rom.path_cover_l and mapped to boxFront."""
+def test_collect_assets_with_cover(tmp_path, monkeypatch):
+    """Cover is picked up from rom.path_cover_l and mapped to box_front."""
+    monkeypatch.setattr(fs_resource_handler, "base_path", tmp_path)
     exporter = PegasusExporter(local_export=True)
-    exporter._resources_path = tmp_path
 
     cover_file = tmp_path / "roms" / "1" / "1" / "cover" / "big.png"
     cover_file.parent.mkdir(parents=True)
@@ -451,14 +451,14 @@ def test_collect_assets_with_cover(tmp_path):
         gamelist_metadata=None,
     )
     assets = exporter._collect_assets(rom)
-    assert "boxFront" in assets
-    assert assets["boxFront"] == cover_file
+    assert "box_front" in assets
+    assert assets["box_front"] == cover_file
 
 
-def test_collect_assets_with_screenshots(tmp_path):
+def test_collect_assets_with_screenshots(tmp_path, monkeypatch):
     """First screenshot is picked up from rom.path_screenshots."""
+    monkeypatch.setattr(fs_resource_handler, "base_path", tmp_path)
     exporter = PegasusExporter(local_export=True)
-    exporter._resources_path = tmp_path
 
     ss_file = tmp_path / "roms" / "1" / "1" / "screenshots" / "0.jpg"
     ss_file.parent.mkdir(parents=True)
@@ -476,10 +476,10 @@ def test_collect_assets_with_screenshots(tmp_path):
     assert assets["screenshot"] == ss_file
 
 
-def test_collect_assets_with_video(tmp_path):
+def test_collect_assets_with_video(tmp_path, monkeypatch):
     """Video is picked up from rom.path_video."""
+    monkeypatch.setattr(fs_resource_handler, "base_path", tmp_path)
     exporter = PegasusExporter(local_export=True)
-    exporter._resources_path = tmp_path
 
     video_file = tmp_path / "roms" / "1" / "1" / "video" / "video.mp4"
     video_file.parent.mkdir(parents=True)
@@ -497,10 +497,10 @@ def test_collect_assets_with_video(tmp_path):
     assert assets["video"] == video_file
 
 
-def test_collect_assets_ss_metadata(tmp_path):
+def test_collect_assets_ss_metadata(tmp_path, monkeypatch):
     """Extended media from ss_metadata is picked up."""
+    monkeypatch.setattr(fs_resource_handler, "base_path", tmp_path)
     exporter = PegasusExporter(local_export=True)
-    exporter._resources_path = tmp_path
 
     box3d_file = tmp_path / "roms" / "1" / "1" / "box3d" / "box3d.png"
     box3d_file.parent.mkdir(parents=True)
@@ -514,8 +514,8 @@ def test_collect_assets_ss_metadata(tmp_path):
         gamelist_metadata=None,
     )
     assets = exporter._collect_assets(rom)
-    assert "boxFull" in assets
-    assert assets["boxFull"] == box3d_file
+    assert "box_full" in assets
+    assert assets["box_full"] == box3d_file
 
 
 def test_create_game_entry_with_assets():
@@ -537,12 +537,12 @@ def test_create_game_entry_with_assets():
     )
 
     exported_assets = {
-        "boxFront": "media/test/boxFront.png",
-        "screenshot": "media/test/screenshot.jpg",
+        "box_front": "assets/covers/test.png",
+        "screenshot": "assets/screenshots/test.jpg",
     }
 
     entry = exporter._create_game_entry(
         rom, request=None, exported_assets=exported_assets
     )
-    assert "assets.boxFront: media/test/boxFront.png" in entry
-    assert "assets.screenshot: media/test/screenshot.jpg" in entry
+    assert "assets.box_front: assets/covers/test.png" in entry
+    assert "assets.screenshot: assets/screenshots/test.jpg" in entry

@@ -3,6 +3,7 @@ import fnmatch
 import os
 import re
 import shutil
+import tempfile
 from contextlib import asynccontextmanager
 from enum import Enum
 from io import BytesIO
@@ -172,19 +173,19 @@ class FSHandler:
 
     @asynccontextmanager
     async def _atomic_write(self, target_path: Path):
-        """Context manager for atomic file writing."""
-        temp_path = None
-        try:
-            # Create temporary file in same directory
-            temp_path = target_path.parent / f".tmp_{target_path.name}_{os.getpid()}"
-            yield temp_path
+        """Context manager for atomic file writing using a system temp file."""
+        fd, temp_path_str = tempfile.mkstemp()
+        temp_path = Path(temp_path_str)
+        os.close(fd)
 
-            # Atomic move to final location
+        try:
+            yield temp_path
+            # Move to final location
             shutil.move(str(temp_path), str(target_path))
 
         except Exception:
             # Clean up temporary file on error
-            if temp_path and temp_path.exists():
+            if temp_path.exists():
                 temp_path.unlink()
             raise
 

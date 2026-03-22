@@ -117,8 +117,15 @@ def process_changes(changes: Sequence[Change]) -> None:
     if not ENABLE_RESCAN_ON_FILESYSTEM_CHANGE:
         return
 
-    # Filter for valid events
-    changes = [change for change in changes if change[0] in VALID_EVENTS]
+    # Filter for valid events, ignoring excluded files/dirs from config
+    config = cm.get_config()
+    excluded_names = set(config.EXCLUDED_SINGLE_FILES + config.EXCLUDED_MULTI_FILES)
+    changes = [
+        change
+        for change in changes
+        if change[0] in VALID_EVENTS
+        and os.path.basename(os.fsdecode(change[1])) not in excluded_names
+    ]
     if not changes:
         return
 

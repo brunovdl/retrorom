@@ -1,4 +1,3 @@
-import os
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -9,6 +8,18 @@ from handler.database import db_platform_handler, db_rom_handler
 from handler.filesystem import fs_platform_handler, fs_resource_handler
 from logger.logger import log
 from models.rom import Rom
+
+# Map Pegasus asset keys to subdirectory names inside assets/
+ASSET_DIRS: dict[str, str] = {
+    "box_front": "covers",
+    "box_back": "backcovers",
+    "box_full": "boxes",
+    "screenshot": "screenshots",
+    "video": "videos",
+    "marquee": "marquees",
+    "cartridge": "cartridges",
+    "logo": "logos",
+}
 
 
 class PegasusExporter:
@@ -42,43 +53,45 @@ class PegasusExporter:
         Returns a dict mapping Pegasus asset key to the absolute source file path.
         """
         assets: dict[str, Path] = {}
+        base = fs_resource_handler.base_path
 
         if rom.path_cover_l:
-            if p := fs_resource_handler.base_path / rom.path_cover_l:
-                assets["boxFront"] = p
+            p = base / rom.path_cover_l
+            if p.is_file():
+                assets["box_front"] = p
 
         if rom.path_screenshots:
-            if p := fs_resource_handler.base_path / rom.path_screenshots[0]:
+            p = base / rom.path_screenshots[0]
+            if p.is_file():
                 assets["screenshot"] = p
 
         if rom.path_video:
-            if p := fs_resource_handler.base_path / rom.path_video:
+            p = base / rom.path_video
+            if p.is_file():
                 assets["video"] = p
 
         # Extended media from screenscraper / gamelist metadata
         ss = rom.ss_metadata or {}
         gl = rom.gamelist_metadata or {}
 
-        media_map: dict[str, list[str]] = {
-            "boxFull": [ss.get("box3d_path", ""), gl.get("box3d_path", "")],
-            "boxBack": [ss.get("box2d_back_path", ""), gl.get("box2d_back", "")],
-            "marquee": [ss.get("logo_path", ""), gl.get("marquee_path", "")],
+        extended: dict[str, list[str]] = {
+            "box_full": [ss.get("box3d_path", ""), gl.get("box3d_path", "")],
+            "box_back": [ss.get("box2d_back_path", ""), gl.get("box2d_back", "")],
+            "logo": [ss.get("logo_path", "")],
+            "marquee": [gl.get("marquee_path", "")],
             "cartridge": [ss.get("physical_path", ""), gl.get("physical_path", "")],
         }
-        for pegasus_key, candidates in media_map.items():
+        for pegasus_key, candidates in extended.items():
             if pegasus_key in assets:
                 continue
             for candidate in candidates:
                 if candidate:
-                    if p := fs_resource_handler.base_path / candidate:
+                    p = base / candidate
+                    if p.is_file():
                         assets[pegasus_key] = p
                         break
 
         return assets
-
-    def _game_media_dir_name(self, rom: Rom) -> str:
-        """Get the media subdirectory name for a ROM (filename without extension)."""
-        return rom.fs_name_no_ext
 
     def _create_game_entry(
         self,
@@ -143,7 +156,7 @@ class PegasusExporter:
         if rom.metadatum and rom.metadatum.average_rating is not None:
             lines.append(f"rating: {self._format_rating(rom.metadatum.average_rating)}")
 
-        # Asset references (relative paths to media files)
+        # Asset references (relative paths to asset files)
         if exported_assets:
             for asset_key, rel_path in exported_assets.items():
                 lines.append(f"assets.{asset_key}: {rel_path}")
@@ -160,21 +173,18 @@ class PegasusExporter:
         return "\n".join(lines)
 
     def _copy_asset(self, source: Path, dest: Path) -> bool:
-        """Hard-link or copy a file from source to dest. Returns True on success."""
+        """Copy a file from source to dest using raw read/write. Returns True on success."""
         dest.parent.mkdir(parents=True, exist_ok=True)
         if dest.exists():
             return True
 
         try:
-            os.link(source, dest)
+            with open(source, "rb") as src, open(dest, "wb") as dst:
+                shutil.copyfileobj(src, dst)
             return True
-        except OSError:
-            try:
-                shutil.copy2(source, dest)
-                return True
-            except OSError as e:
-                log.warning(f"Failed to copy {source} -> {dest}: {e}")
-                return False
+        except OSError as e:
+            log.warning(f"Failed to copy {source} -> {dest}: {e}")
+            return False
 
     def export_platform_to_pegasus(
         self, platform_id: int, request: Request | None
@@ -219,7 +229,7 @@ class PegasusExporter:
         request: Request | None,
     ) -> bool:
         """Export platform ROMs to metadata.pegasus.txt file in the platform's directory,
-        including media assets copied into a local media/ folder.
+        including media assets copied into a local assets/ folder.
 
         Args:
             platform_id: Platform ID to export
@@ -257,16 +267,14 @@ class PegasusExporter:
 
                 if self.local_export:
                     assets = self._collect_assets(rom)
-                    media_dir_name = self._game_media_dir_name(rom)
 
                     for asset_key, source_path in assets.items():
-                        dest_name = f"{asset_key}{source_path.suffix}"
-                        dest_path = platform_dir / "media" / media_dir_name / dest_name
+                        subdir = ASSET_DIRS.get(asset_key, asset_key)
+                        dest_name = f"{rom.fs_name_no_ext}{source_path.suffix}"
+                        dest_path = platform_dir / "assets" / subdir / dest_name
 
                         if self._copy_asset(source_path, dest_path):
-                            exported_assets[asset_key] = (
-                                f"media/{media_dir_name}/{dest_name}"
-                            )
+                            exported_assets[asset_key] = f"assets/{subdir}/{dest_name}"
 
                 if game_count > 0:
                     lines.append("")
