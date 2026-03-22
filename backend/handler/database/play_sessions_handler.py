@@ -12,14 +12,14 @@ from .base_handler import DBBaseHandler
 
 class DBPlaySessionsHandler(DBBaseHandler):
     @begin_session
-    def add_session(
+    def add_sessions(
         self,
-        play_session: PlaySession,
+        play_sessions: list[PlaySession],
         session: Session = None,  # type: ignore
-    ) -> PlaySession:
-        session.add(play_session)
+    ) -> list[PlaySession]:
+        session.add_all(play_sessions)
         session.flush()
-        return play_session
+        return play_sessions
 
     @begin_session
     def find_existing(
