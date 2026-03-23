@@ -68,5 +68,6 @@ class TestCreateOrFindWebDevice:
             device_id=second.id, user_id=admin_user.id
         )
 
+        assert refreshed is not None
         assert refreshed.last_seen is not None
         assert first.id == refreshed.id
