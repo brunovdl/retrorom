@@ -55,6 +55,7 @@ def test_config_loader():
     assert loader.config.SCAN_REGION_PRIORITY == ["jp", "eu", "wor"]
     assert loader.config.SCAN_LANGUAGE_PRIORITY == ["jp", "es"]
     assert loader.config.GAMELIST_THUMBNAIL_MEDIA == "box3d"
+    assert loader.config.GAMELIST_IMAGE_MEDIA == "title_screen"
 
 
 def test_empty_config_loader():
@@ -88,3 +89,4 @@ def test_empty_config_loader():
     assert loader.config.EJS_SETTINGS == {}
     assert loader.config.EJS_CONTROLS == {}
     assert loader.config.GAMELIST_THUMBNAIL_MEDIA == "cover"
+    assert loader.config.GAMELIST_IMAGE_MEDIA == "screenshot"

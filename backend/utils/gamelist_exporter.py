@@ -87,6 +87,27 @@ class GamelistExporter:
                 f"{FRONTEND_RESOURCES_PATH}/{rom.path_screenshots[0]}"
             )
 
+        image_path: str | None = None
+        image_option = cm.config.GAMELIST_IMAGE_MEDIA
+        if image_option == "title_screen":
+            if rom.ss_metadata and rom.ss_metadata.get("title_screen_path"):
+                image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['title_screen_path']}"
+            elif rom.gamelist_metadata and rom.gamelist_metadata.get("title_screen_path"):
+                image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['title_screen_path']}"
+        elif image_option == "miximage":
+            if rom.ss_metadata and rom.ss_metadata.get("miximage_path"):
+                image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['miximage_path']}"
+            elif rom.gamelist_metadata and rom.gamelist_metadata.get("miximage_path"):
+                image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['miximage_path']}"
+        elif image_option == "cover":
+            if rom.path_cover_l:
+                image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.path_cover_l}"
+        # "screenshot" (default) and anything else falls through to path_screenshots
+        if image_path is None and rom.path_screenshots:
+            image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.path_screenshots[0]}"
+        if image_path:
+            SubElement(game, "image").text = image_path
+
         if rom.path_manual:
             SubElement(game, "manual").text = (
                 f"{FRONTEND_RESOURCES_PATH}/{rom.path_manual}"
@@ -154,9 +175,9 @@ class GamelistExporter:
                 SubElement(game, "physicalmedia").text = (
                     f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata["physical_path"]}"
                 )
-            if rom.ss_metadata.get("title_screen"):
+            if rom.ss_metadata.get("title_screen_path"):
                 SubElement(game, "title_screen").text = (
-                    f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata["title_screen"]}"
+                    f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['title_screen_path']}"
                 )
             if rom.ss_metadata.get("bezel_path"):
                 SubElement(game, "bezel").text = (
@@ -172,16 +193,18 @@ class GamelistExporter:
                 SubElement(game, "fanart").text = rom.gamelist_metadata["fanart"]
             if rom.gamelist_metadata.get("marquee"):
                 SubElement(game, "marquee").text = rom.gamelist_metadata["marquee"]
-            if rom.gamelist_metadata.get("miximage"):
-                SubElement(game, "miximage").text = rom.gamelist_metadata["miximage"]
-            if rom.gamelist_metadata.get("physical"):
-                SubElement(game, "physicalmedia").text = rom.gamelist_metadata[
-                    "physical"
-                ]
-            if rom.gamelist_metadata.get("title_screen"):
-                SubElement(game, "title_screen").text = rom.gamelist_metadata[
-                    "title_screen"
-                ]
+            if rom.gamelist_metadata.get("miximage_path"):
+                SubElement(game, "miximage").text = (
+                    f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['miximage_path']}"
+                )
+            if rom.gamelist_metadata.get("physical_path"):
+                SubElement(game, "physicalmedia").text = (
+                    f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['physical_path']}"
+                )
+            if rom.gamelist_metadata.get("title_screen_path"):
+                SubElement(game, "title_screen").text = (
+                    f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['title_screen_path']}"
+                )
 
         # Add scraping info
         scrap = SubElement(game, "scrap")

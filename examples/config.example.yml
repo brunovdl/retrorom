@@ -145,6 +145,12 @@
 #       # miximage - mixed image (falls back to cover if not available)
 #       # physical - disc/cartridge image (falls back to cover if not available)
 #       thumbnail: cover
+#       # Media asset to use as the <image> tag in the exported gamelist.xml
+#       # screenshot   - first screenshot (default)
+#       # title_screen - title screen image (falls back to screenshot if not available)
+#       # miximage     - mixed image (falls back to screenshot if not available)
+#       # cover        - front cover art (falls back to screenshot if not available)
+#       image: screenshot
 
 # EmulatorJS per-core options
 # emulatorjs:

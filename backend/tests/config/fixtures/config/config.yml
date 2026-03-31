@@ -80,3 +80,4 @@ export:
   gamelist:
     media:
       thumbnail: "box3d"
+      image: "title_screen"
