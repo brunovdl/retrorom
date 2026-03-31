@@ -95,8 +95,10 @@ class GamelistExporter:
             )
 
         if rom.metadatum.average_rating is not None:
-            # average_rating in is on a 0-10 scale, but gamelist.xml expects a 0-1 scale
-            SubElement(game, "rating").text = f"{rom.metadatum.average_rating / 10:.2f}"
+            # average_rating is on a 0-100 scale (DB view averages all scrapers on that scale)
+            # gamelist.xml expects a 0-1 scale
+            gamelist_rating = rom.metadatum.average_rating / 100
+            SubElement(game, "rating").text = f"{gamelist_rating:.2f}"
 
         if rom.gamelist_id:
             SubElement(game, "id").text = str(rom.gamelist_id)
