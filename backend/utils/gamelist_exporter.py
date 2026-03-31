@@ -83,6 +83,12 @@ class GamelistExporter:
         if rom.metadatum.genres and len(rom.metadatum.genres) > 0:
             SubElement(game, "genre").text = rom.metadatum.genres[0]
 
+        if rom.metadatum.franchises and len(rom.metadatum.franchises) > 0:
+            SubElement(game, "family").text = rom.metadatum.franchises[0]
+
+        if rom.metadatum.player_count:
+            SubElement(game, "players").text = rom.metadatum.player_count
+
         if rom.languages and len(rom.languages) > 0:
             SubElement(game, "lang").text = rom.languages[0]
 
@@ -145,8 +151,6 @@ class GamelistExporter:
                 SubElement(game, "marquee").text = rom.gamelist_metadata["marquee"]
             if rom.gamelist_metadata.get("miximage"):
                 SubElement(game, "miximage").text = rom.gamelist_metadata["miximage"]
-            if rom.gamelist_metadata.get("player_count"):
-                SubElement(game, "players").text = rom.gamelist_metadata["player_count"]
             if rom.gamelist_metadata.get("physical"):
                 SubElement(game, "physicalmedia").text = rom.gamelist_metadata[
                     "physical"
