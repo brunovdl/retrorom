@@ -126,6 +126,7 @@ class Config:
     SCAN_REGION_PRIORITY: list[str]
     SCAN_LANGUAGE_PRIORITY: list[str]
     SCAN_MEDIA: list[str]
+    GAMELIST_THUMBNAIL_MEDIA: str
 
     def __init__(self, **entries):
         self.__dict__.update(entries)
@@ -340,6 +341,11 @@ class ConfigManager:
                     "screenshot",
                     "manual",
                 ],
+            ),
+            GAMELIST_THUMBNAIL_MEDIA=pydash.get(
+                self._raw_config,
+                "export.gamelist.media.thumbnail",
+                "cover",
             ),
         )
 

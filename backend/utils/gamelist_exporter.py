@@ -9,6 +9,7 @@ from xml.etree.ElementTree import (  # trunk-ignore(bandit/B405)
 from fastapi import Request
 
 from config import FRONTEND_RESOURCES_PATH, YOUTUBE_BASE_URL
+from config.config_manager import config_manager as cm
 from handler.database import db_platform_handler, db_rom_handler
 from handler.filesystem import fs_platform_handler
 from logger.logger import log
@@ -51,10 +52,28 @@ class GamelistExporter:
             SubElement(game, "desc").text = rom.summary
 
         # Media files
-        if rom.path_cover_l:
-            SubElement(game, "thumbnail").text = (
-                f"{FRONTEND_RESOURCES_PATH}/{rom.path_cover_l}"
-            )
+        thumbnail_path: str | None = None
+        thumbnail_option = cm.config.GAMELIST_THUMBNAIL_MEDIA
+        if thumbnail_option == "box3d":
+            if rom.ss_metadata and rom.ss_metadata.get("box3d_path"):
+                thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['box3d_path']}"
+            elif rom.gamelist_metadata and rom.gamelist_metadata.get("box3d"):
+                thumbnail_path = rom.gamelist_metadata["box3d"]
+        elif thumbnail_option == "miximage":
+            if rom.ss_metadata and rom.ss_metadata.get("miximage_path"):
+                thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['miximage_path']}"
+            elif rom.gamelist_metadata and rom.gamelist_metadata.get("miximage_path"):
+                thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['miximage_path']}"
+        elif thumbnail_option == "physical":
+            if rom.ss_metadata and rom.ss_metadata.get("physical_path"):
+                thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['physical_path']}"
+            elif rom.gamelist_metadata and rom.gamelist_metadata.get("physical_path"):
+                thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['physical_path']}"
+        # "cover" and "box2d" both map to path_cover_l (box2d IS the front cover)
+        if thumbnail_path is None and rom.path_cover_l:
+            thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.path_cover_l}"
+        if thumbnail_path:
+            SubElement(game, "thumbnail").text = thumbnail_path
 
         if path_video := rom.path_video:
             SubElement(game, "video").text = f"{FRONTEND_RESOURCES_PATH}/{path_video}"

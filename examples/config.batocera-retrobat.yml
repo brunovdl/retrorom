@@ -183,3 +183,11 @@ system:
     zx81: zx81
     zxspectrum: zxs
   versions: {}
+
+export:
+  gamelist:
+    media:
+      # Use the 3D box art as the <thumbnail> tag, preferred by Batocera/RetroBAT
+      # Falls back to front cover if 3D box art has not been scraped
+      # Other options: cover (default), box2d, miximage, physical
+      thumbnail: box3d

@@ -135,6 +135,17 @@
 #     # Other media assets (might be used in the future)
 #     - marquee  # Custom marquee
 
+# export:
+#   gamelist:
+#     media:
+#       # Media asset to use as the <thumbnail> tag in the exported gamelist.xml
+#       # cover    - front cover art / box2d (default)
+#       # box2d    - same as cover
+#       # box3d    - 3D box art (falls back to cover if not available)
+#       # miximage - mixed image (falls back to cover if not available)
+#       # physical - disc/cartridge image (falls back to cover if not available)
+#       thumbnail: cover
+
 # EmulatorJS per-core options
 # emulatorjs:
 #   debug: true # Available options will be logged to the browser console

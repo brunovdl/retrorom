@@ -54,6 +54,7 @@ def test_config_loader():
     assert loader.config.SCAN_ARTWORK_PRIORITY == ["igdb", "ss"]
     assert loader.config.SCAN_REGION_PRIORITY == ["jp", "eu", "wor"]
     assert loader.config.SCAN_LANGUAGE_PRIORITY == ["jp", "es"]
+    assert loader.config.GAMELIST_THUMBNAIL_MEDIA == "box3d"
 
 
 def test_empty_config_loader():
@@ -86,3 +87,4 @@ def test_empty_config_loader():
     assert loader.config.EJS_NETPLAY_ICE_SERVERS == []
     assert loader.config.EJS_SETTINGS == {}
     assert loader.config.EJS_CONTROLS == {}
+    assert loader.config.GAMELIST_THUMBNAIL_MEDIA == "cover"
