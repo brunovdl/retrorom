@@ -5,8 +5,9 @@ from typing import TypeVar
 
 import aiohttp
 import httpx
-from config import has_proxy_env
 from fastapi import Request, Response
+
+from config import has_proxy_env
 
 _T = TypeVar("_T")
 

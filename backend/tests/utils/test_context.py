@@ -12,19 +12,11 @@ class TestProxyAwareHttpClients:
 
         assert has_proxy_env() is True
 
-    def test_has_proxy_env_detects_lowercase_proxy_vars(self, monkeypatch):
-        monkeypatch.setenv("https_proxy", "http://proxy.internal:8443")
-
-        assert has_proxy_env() is True
-
     def test_has_proxy_env_returns_false_without_proxy_vars(self, monkeypatch):
         for var in (
             "HTTP_PROXY",
             "HTTPS_PROXY",
             "NO_PROXY",
-            "http_proxy",
-            "https_proxy",
-            "no_proxy",
         ):
             monkeypatch.delenv(var, raising=False)
 

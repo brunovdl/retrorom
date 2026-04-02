@@ -21,20 +21,6 @@ def _get_env(var: str, fallback: str | None = None) -> str | None:
     return val.strip() if val else val
 
 
-def has_proxy_env() -> bool:
-    return any(
-        _get_env(var)
-        for var in (
-            "HTTP_PROXY",
-            "HTTPS_PROXY",
-            "NO_PROXY",
-            "http_proxy",
-            "https_proxy",
-            "no_proxy",
-        )
-    )
-
-
 ROMM_BASE_URL: Final[str] = _get_env("ROMM_BASE_URL", "http://0.0.0.0")
 ROMM_PORT: Final[int] = safe_int(_get_env("ROMM_PORT"), 8080)
 
@@ -253,3 +239,15 @@ SENTRY_DSN: Final[str | None] = _get_env("SENTRY_DSN")
 
 # TESTING
 IS_PYTEST_RUN: Final = bool(_get_env("PYTEST_VERSION"))
+
+
+# PROXY
+def has_proxy_env() -> bool:
+    return any(
+        _get_env(var)
+        for var in (
+            "HTTP_PROXY",
+            "HTTPS_PROXY",
+            "NO_PROXY",
+        )
+    )
