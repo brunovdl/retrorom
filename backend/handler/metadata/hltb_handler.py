@@ -178,9 +178,11 @@ class HLTBHandler(MetadataHandler):
         self.base_url = "https://howlongtobeat.com"
         self.user_endpoint = f"{self.base_url}/api/user"
         self.stats_endpoint = f"{self.base_url}/api/stats/games?platform=1&year=2000"
-        self.search_url = f"{self.base_url}/api/search"
+        self.search_url = f"{self.base_url}/api/find"
         self.search_init_url = f"{self.search_url}/init"
         self.security_token = None
+        self.hp_key = None
+        self.hp_val = None
         self.min_similarity_score: Final = 0.85
 
         # HLTB rotates their search endpoint regularly
@@ -226,7 +228,10 @@ class HLTBHandler(MetadataHandler):
                     timeout=10,
                 )
                 response.raise_for_status()
-                self.security_token = response.json().get("token", None)
+                data = response.json()
+                self.security_token = data.get("token", None)
+                self.hp_key = data.get("hpKey", None)
+                self.hp_val = data.get("hpVal", None)
         except Exception as e:
             log.warning("Unexpected error fetching HLTB security token: %s", e)
 
@@ -253,7 +258,7 @@ class HLTBHandler(MetadataHandler):
         :return: A dictionary with the json result.
         :raises HTTPException: If the request fails or the service is unavailable.
         """
-        if not self.security_token:
+        if not self.security_token or not self.hp_key or not self.hp_val:
             return {}
 
         httpx_client = ctx_httpx_client.get()
@@ -262,8 +267,13 @@ class HLTBHandler(MetadataHandler):
             "Content-Type": "application/json",
             "Referer": "https://howlongtobeat.com",
             "User-Agent": f"RomM/{get_version()}",
-            "X-Auth-Token": self.security_token,
+            "x-auth-token": self.security_token,
+            "x-hp-key": self.hp_key,
+            "x-hp-val": self.hp_val,
         }
+
+        # Some HLTB endpoints require the key:val in the payload
+        payload[self.hp_key] = self.hp_val
 
         log.debug(
             "HowLongToBeat API request: URL=%s, Headers=%s, Payload=%s, Timeout=%s",
