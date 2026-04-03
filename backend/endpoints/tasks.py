@@ -277,6 +277,7 @@ async def get_tasks_status(request: Request) -> list[TaskStatusResponse]:
             try:
                 job = Job.fetch(job_id, connection=redis_client)
             except NoSuchJobError:
+                registry.remove(job_id)
                 continue
             all_tasks.append(
                 _build_task_status_response(
@@ -290,6 +291,7 @@ async def get_tasks_status(request: Request) -> list[TaskStatusResponse]:
             try:
                 job = Job.fetch(job_id, connection=redis_client)
             except NoSuchJobError:
+                registry.remove(job_id)
                 continue
             all_tasks.append(_build_task_status_response(job))
 
