@@ -5,6 +5,7 @@ import type {
   BulkOperationResponse,
   DetailedRomSchema,
   ManualMetadata,
+  RomUserData,
   RomUserSchema,
   SearchRomSchema,
   SimpleRomSchema,
@@ -544,7 +545,7 @@ async function updateUserRomProps({
   removeLastPlayed = false,
 }: {
   romId: number;
-  data: Partial<RomUserSchema>;
+  data: Partial<RomUserData>;
   updateLastPlayed?: boolean;
   removeLastPlayed?: boolean;
 }) {

@@ -641,7 +641,6 @@ class DBRomsHandler(DBBaseHandler):
                 .with_only_columns(
                     base_subquery.c.id,
                     base_subquery.c.fs_name_no_ext,
-                    base_subquery.c.fs_name_no_tags,
                     base_subquery.c.platform_id,
                     base_subquery.c.igdb_id,
                     base_subquery.c.ss_id,
@@ -705,11 +704,6 @@ class DBRomsHandler(DBBaseHandler):
                             _create_metadata_id_case(
                                 "fs",
                                 func.nullif(base_subquery.c.fs_name_no_tags, ""),
-                                base_subquery.c.platform_id,
-                            ),
-                            _create_metadata_id_case(
-                                "romm",
-                                base_subquery.c.id,
                                 base_subquery.c.platform_id,
                             ),
                         ),

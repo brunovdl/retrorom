@@ -203,7 +203,7 @@ def validate_url_for_http_request(url: str, field_name: str = "URL") -> None:
             log.error(f"SSRF prevention: {msg} - IP '{ip}'")
             raise ValidationError(msg, field_name)
 
-    except ValueError:
+    except ValueError as e:
         # ipaddress.ip_address() only handles standard notation. HTTP clients
         # also accept hex integers (0x7f000001), decimal integers (2130706433),
         # shorthand dotted (127.1), and octal (0177.0.0.1). Use socket.inet_aton()
@@ -238,4 +238,4 @@ def validate_url_for_http_request(url: str, field_name: str = "URL") -> None:
         if any(hostname_lower.endswith(tld) for tld in internal_tlds):
             msg = f"Invalid {field_name}: internal domain names are not allowed"
             log.error(f"SSRF prevention: {msg} - hostname '{hostname}'")
-            raise ValidationError(msg, field_name)
+            raise ValidationError(msg, field_name) from e
