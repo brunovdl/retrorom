@@ -701,11 +701,7 @@ class DBRomsHandler(DBBaseHandler):
                                 base_subquery.c.flashpoint_id,
                                 base_subquery.c.platform_id,
                             ),
-                            _create_metadata_id_case(
-                                "fs",
-                                func.nullif(base_subquery.c.fs_name_no_tags, ""),
-                                base_subquery.c.platform_id,
-                            ),
+                            base_subquery.c.id,
                         ),
                         order_by=[
                             is_main_sibling_order,

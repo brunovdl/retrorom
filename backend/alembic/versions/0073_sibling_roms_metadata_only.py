@@ -19,6 +19,10 @@ depends_on = None
 
 
 def upgrade() -> None:
+    # Drop the fs_name_no_tags index created in 0069, no longer used
+    with op.batch_alter_table("roms", schema=None) as batch_op:
+        batch_op.drop_index("idx_roms_fs_name_no_tags")
+
     connection = op.get_bind()
     null_safe_equal_operator = (
         "IS NOT DISTINCT FROM" if is_postgresql(connection) else "<=>"
@@ -71,6 +75,10 @@ def downgrade() -> None:
     null_safe_equal_operator = (
         "IS NOT DISTINCT FROM" if is_postgresql(connection) else "<=>"
     )
+
+    # Recreate the fs_name_no_tags index needed by the restored view
+    with op.batch_alter_table("roms", schema=None) as batch_op:
+        batch_op.create_index("idx_roms_fs_name_no_tags", ["fs_name_no_tags"])
 
     # Restore view with fs_name_no_tags matching (from 0071)
     connection.execute(

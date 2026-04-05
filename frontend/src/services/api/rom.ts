@@ -550,8 +550,11 @@ async function updateUserRomProps({
   removeLastPlayed?: boolean;
 }) {
   const params = new URLSearchParams();
-  if (updateLastPlayed) params.set("update_last_played", "true");
-  if (removeLastPlayed) params.set("remove_last_played", "true");
+  if (updateLastPlayed) {
+    params.set("update_last_played", "true");
+  } else if (removeLastPlayed) {
+    params.set("remove_last_played", "true");
+  }
   const query = params.toString();
   return api.put<RomUserSchema>(
     `/roms/${romId}/props${query ? `?${query}` : ""}`,

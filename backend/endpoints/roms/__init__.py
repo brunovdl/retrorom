@@ -1541,6 +1541,12 @@ async def update_rom_user(
         id, request.user.id
     ) or db_rom_handler.add_rom_user(id, request.user.id)
 
+    if update_last_played and remove_last_played:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="update_last_played and remove_last_played are mutually exclusive.",
+        )
+
     cleaned_data = data.model_dump(exclude_unset=True)
 
     if update_last_played:

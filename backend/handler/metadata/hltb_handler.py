@@ -185,15 +185,16 @@ class HLTBHandler(MetadataHandler):
         self.hp_val = None
         self.min_similarity_score: Final = 0.85
 
+    @classmethod
+    def is_enabled(cls) -> bool:
+        return HLTB_API_ENABLED
+
+    def initialize(self) -> None:
         # HLTB rotates their search endpoint regularly
         self._fetch_search_endpoint()
 
         # HLTB now requires a security token
         self._fetch_security_token()
-
-    @classmethod
-    def is_enabled(cls) -> bool:
-        return HLTB_API_ENABLED
 
     def _fetch_search_endpoint(self):
         """Fetch the API endpoint URL from Github."""
