@@ -210,7 +210,8 @@ class RomMetadataSchema(BaseModel):
         # when using JSON_EXTRACT with a [*] wildcard path on a single-element array.
         if isinstance(v, str):
             return sorted([v]) if v else []
-        return sorted(v) if v else []
+
+        return sorted(v)
 
 
 class RomSchema(BaseModel):
