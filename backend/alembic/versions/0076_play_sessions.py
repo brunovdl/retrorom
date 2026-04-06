@@ -1,7 +1,7 @@
 """Add play_sessions table for game time tracking
 
-Revision ID: 0073_play_sessions
-Revises: 0072_client_tokens
+Revision ID: 0076_play_sessions
+Revises: 0075_sync_sessions
 Create Date: 2026-03-22 00:00:00.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "0073_play_sessions"
-down_revision = "0072_client_tokens"
+revision = "0076_play_sessions"
+down_revision = "0075_sync_sessions"
 branch_labels = None
 depends_on = None
 
