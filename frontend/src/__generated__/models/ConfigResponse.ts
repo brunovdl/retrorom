@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EjsControls } from './EjsControls';
+import type { MetadataMediaType } from './MetadataMediaType';
 import type { NetplayICEServer } from './NetplayICEServer';
 export type ConfigResponse = {
     CONFIG_FILE_MOUNTED: boolean;
@@ -32,5 +33,7 @@ export type ConfigResponse = {
     SCAN_REGION_PRIORITY: Array<string>;
     SCAN_LANGUAGE_PRIORITY: Array<string>;
     SCAN_MEDIA: Array<string>;
+    GAMELIST_MEDIA_THUMBNAIL: MetadataMediaType;
+    GAMELIST_MEDIA_IMAGE: MetadataMediaType;
 };
 

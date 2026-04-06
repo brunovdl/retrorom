@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from config.config_manager import EjsControls, NetplayICEServer
+from config.config_manager import EjsControls, MetadataMediaType, NetplayICEServer
 
 
 class ConfigResponse(TypedDict):
@@ -31,3 +31,5 @@ class ConfigResponse(TypedDict):
     SCAN_REGION_PRIORITY: list[str]
     SCAN_LANGUAGE_PRIORITY: list[str]
     SCAN_MEDIA: list[str]
+    GAMELIST_MEDIA_THUMBNAIL: MetadataMediaType
+    GAMELIST_MEDIA_IMAGE: MetadataMediaType

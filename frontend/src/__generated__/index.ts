@@ -72,6 +72,7 @@ export type { JobStatus } from './models/JobStatus';
 export type { LaunchboxImage } from './models/LaunchboxImage';
 export type { ManualMetadata } from './models/ManualMetadata';
 export type { MetadataCoverageItem } from './models/MetadataCoverageItem';
+export type { MetadataMediaType } from './models/MetadataMediaType';
 export type { MetadataSourcesDict } from './models/MetadataSourcesDict';
 export type { MissingRomsCleanupStats } from './models/MissingRomsCleanupStats';
 export type { MobyMetadataPlatform } from './models/MobyMetadataPlatform';

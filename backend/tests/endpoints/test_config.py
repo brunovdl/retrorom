@@ -36,6 +36,8 @@ def test_config(client):
     assert config.get("EXCLUDED_MULTI_PARTS_FILES") == sorted(DEFAULT_EXCLUDED_FILES)
     assert config.get("PLATFORMS_BINDING") == {}
     assert not config.get("SKIP_HASH_CALCULATION")
+    assert config.get("GAMELIST_MEDIA_THUMBNAIL") == "box2d"
+    assert config.get("GAMELIST_MEDIA_IMAGE") == "screenshot"
 
 
 def test_add_platform_binding_payload_shape(client, access_token: str):

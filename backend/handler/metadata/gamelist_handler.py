@@ -244,6 +244,12 @@ def populate_rom_specific_paths(
         updated_metadata["physical_path"] = (
             f"{fs_resource_handler.get_media_resources_path(rom.platform_id, rom.id, MetadataMediaType.PHYSICAL)}/physical.png"
         )
+    if MetadataMediaType.TITLE_SCREEN in preferred_media_types and rom_metadata.get(
+        "title_screen_url"
+    ):
+        updated_metadata["title_screen_path"] = (
+            f"{fs_resource_handler.get_media_resources_path(rom.platform_id, rom.id, MetadataMediaType.TITLE_SCREEN)}/title_screen.png"
+        )
     if MetadataMediaType.VIDEO in preferred_media_types and rom_metadata.get(
         "video_url"
     ):

@@ -127,6 +127,8 @@ class Config:
     SCAN_REGION_PRIORITY: list[str]
     SCAN_LANGUAGE_PRIORITY: list[str]
     SCAN_MEDIA: list[str]
+    GAMELIST_MEDIA_THUMBNAIL: MetadataMediaType
+    GAMELIST_MEDIA_IMAGE: MetadataMediaType
 
     def __init__(self, **entries):
         self.__dict__.update(entries)
@@ -295,9 +297,6 @@ class ConfigManager:
             FIRMWARE_FOLDER_NAME=pydash.get(
                 self._raw_config, "filesystem.firmware_folder", "bios"
             ),
-            GAMELIST_AUTO_EXPORT_ON_SCAN=pydash.get(
-                self._raw_config, "scan.export_gamelist", False
-            ),
             SKIP_HASH_CALCULATION=pydash.get(
                 self._raw_config, "filesystem.skip_hash_calculation", False
             ),
@@ -370,6 +369,19 @@ class ConfigManager:
                     "manual",
                 ],
             ),
+            GAMELIST_AUTO_EXPORT_ON_SCAN=pydash.get(
+                self._raw_config, "scan.gamelist.export", False
+            ),
+            GAMELIST_MEDIA_THUMBNAIL=pydash.get(
+                self._raw_config,
+                "scan.gamelist.media.thumbnail",
+                MetadataMediaType.BOX2D,
+            ),
+            GAMELIST_MEDIA_IMAGE=pydash.get(
+                self._raw_config,
+                "scan.gamelist.media.image",
+                MetadataMediaType.SCREENSHOT,
+            ),
         )
 
     def _get_ejs_controls(self) -> dict[str, EjsControls]:
@@ -440,7 +452,7 @@ class ConfigManager:
             )
             sys.exit(3)
         if not isinstance(self.config.GAMELIST_AUTO_EXPORT_ON_SCAN, bool):
-            log.critical("Invalid config.yml: scan.export_gamelist must be a boolean")
+            log.critical("Invalid config.yml: scan.gamelist.export must be a boolean")
             sys.exit(3)
 
         if not isinstance(self.config.PLATFORMS_BINDING, dict):
@@ -586,6 +598,42 @@ class ConfigManager:
                 )
                 sys.exit(3)
 
+        valid_thumbnail_options = {
+            MetadataMediaType.BOX2D,
+            MetadataMediaType.BOX3D,
+            MetadataMediaType.MIXIMAGE,
+            MetadataMediaType.PHYSICAL,
+        }
+        if not isinstance(self.config.GAMELIST_MEDIA_THUMBNAIL, str):
+            log.critical(
+                "Invalid config.yml: scan.gamelist.media.thumbnail must be a string"
+            )
+            sys.exit(3)
+        if self.config.GAMELIST_MEDIA_THUMBNAIL not in valid_thumbnail_options:
+            log.critical(
+                f"Invalid config.yml: scan.gamelist.media.thumbnail must be one of {valid_thumbnail_options}"
+            )
+            sys.exit(3)
+
+        valid_image_options = {
+            MetadataMediaType.TITLE_SCREEN,
+            MetadataMediaType.MIXIMAGE,
+            MetadataMediaType.BOX2D,
+            MetadataMediaType.SCREENSHOT,
+        }
+
+        if not isinstance(self.config.GAMELIST_MEDIA_IMAGE, str):
+            log.critical(
+                "Invalid config.yml: scan.gamelist.media.image must be a string"
+            )
+            sys.exit(3)
+
+        if self.config.GAMELIST_MEDIA_IMAGE not in valid_image_options:
+            log.critical(
+                f"Invalid config.yml: scan.gamelist.media.image must be one of {valid_image_options}"
+            )
+            sys.exit(3)
+
     def get_config(self) -> Config:
         try:
             with open(self.config_file, "r") as config_file:
@@ -648,7 +696,13 @@ class ConfigManager:
                     "language": self.config.SCAN_LANGUAGE_PRIORITY,
                 },
                 "media": self.config.SCAN_MEDIA,
-                "export_gamelist": self.config.GAMELIST_AUTO_EXPORT_ON_SCAN,
+                "gamelist": {
+                    "export": self.config.GAMELIST_AUTO_EXPORT_ON_SCAN,
+                    "media": {
+                        "thumbnail": self.config.GAMELIST_MEDIA_THUMBNAIL,
+                        "image": self.config.GAMELIST_MEDIA_IMAGE,
+                    },
+                },
             },
         }
 
