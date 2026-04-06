@@ -51,6 +51,7 @@ from tasks.tasks import update_job_meta
 from utils import emoji
 from utils.context import initialize_context
 from utils.gamelist_exporter import GamelistExporter
+from utils.pegasus_exporter import PegasusExporter
 
 STOP_SCAN_FLAG: Final = "scan:stop"
 
@@ -703,14 +704,13 @@ async def scan_platforms(
 
         log.info(f"{emoji.EMOJI_CHECK_MARK} Scan completed")
 
-        # Export gamelist.xml if enabled in config
+        # Export metadata files if enabled in config
         config = cm.get_config()
+        platforms_by_slug = {p.fs_slug: p for p in db_platform_handler.get_platforms()}
+
         if config.GAMELIST_AUTO_EXPORT_ON_SCAN:
             log.info("Auto-exporting gamelist.xml for all platforms...")
             gamelist_exporter = GamelistExporter(local_export=True)
-            platforms_by_slug = {
-                p.fs_slug: p for p in db_platform_handler.get_platforms()
-            }
             for platform_slug in platform_list:
                 platform = platforms_by_slug.get(platform_slug)
                 if platform:
@@ -727,6 +727,26 @@ async def scan_platforms(
                             f"Failed to auto-export gamelist.xml for platform {platform.name} after scan"
                         )
             log.info("Gamelist.xml auto-export completed.")
+
+        if config.PEGASUS_AUTO_EXPORT_ON_SCAN:
+            log.info("Auto-exporting metadata.pegasus.txt for all platforms...")
+            pegasus_exporter = PegasusExporter(local_export=True)
+            for platform_slug in platform_list:
+                platform = platforms_by_slug.get(platform_slug)
+                if platform:
+                    export_success = await pegasus_exporter.export_platform_to_file(
+                        platform.id,
+                        request=None,
+                    )
+                    if export_success:
+                        log.info(
+                            f"Auto-exported metadata.pegasus.txt for platform {platform.name} after scan"
+                        )
+                    else:
+                        log.warning(
+                            f"Failed to auto-export metadata.pegasus.txt for platform {platform.name} after scan"
+                        )
+            log.info("Pegasus metadata auto-export completed.")
 
         await socket_manager.emit("scan:done", scan_stats.to_dict())
     except ScanStoppedException:

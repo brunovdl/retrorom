@@ -45,7 +45,7 @@ DEFAULT_EXCLUDED_FILES: Final = [
     ".stfolder",
     "@SynoResource",
     "gamelist.xml",
-    "metadata.pegasus.xml",
+    "metadata.pegasus.txt",
 ]
 DEFAULT_EXCLUDED_DIRS: Final = [
     "@eaDir",
@@ -108,6 +108,7 @@ class Config:
     EXCLUDED_MULTI_PARTS_EXT: list[str]
     EXCLUDED_MULTI_PARTS_FILES: list[str]
     GAMELIST_AUTO_EXPORT_ON_SCAN: bool
+    PEGASUS_AUTO_EXPORT_ON_SCAN: bool
     PLATFORMS_BINDING: dict[str, str]
     PLATFORMS_VERSIONS: dict[str, str]
     ROMS_FOLDER_NAME: str
@@ -382,6 +383,9 @@ class ConfigManager:
                 "scan.gamelist.media.image",
                 MetadataMediaType.SCREENSHOT,
             ),
+            PEGASUS_AUTO_EXPORT_ON_SCAN=pydash.get(
+                self._raw_config, "scan.pegasus.export", False
+            ),
         )
 
     def _get_ejs_controls(self) -> dict[str, EjsControls]:
@@ -451,8 +455,13 @@ class ConfigManager:
                 "Invalid config.yml: exclude.roms.multi_file.parts.names must be a list"
             )
             sys.exit(3)
+
         if not isinstance(self.config.GAMELIST_AUTO_EXPORT_ON_SCAN, bool):
             log.critical("Invalid config.yml: scan.gamelist.export must be a boolean")
+            sys.exit(3)
+
+        if not isinstance(self.config.PEGASUS_AUTO_EXPORT_ON_SCAN, bool):
+            log.critical("Invalid config.yml: scan.pegasus.export must be a boolean")
             sys.exit(3)
 
         if not isinstance(self.config.PLATFORMS_BINDING, dict):
@@ -702,6 +711,9 @@ class ConfigManager:
                         "thumbnail": self.config.GAMELIST_MEDIA_THUMBNAIL,
                         "image": self.config.GAMELIST_MEDIA_IMAGE,
                     },
+                },
+                "pegasus": {
+                    "export": self.config.PEGASUS_AUTO_EXPORT_ON_SCAN,
                 },
             },
         }
