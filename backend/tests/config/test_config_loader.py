@@ -111,5 +111,5 @@ def test_empty_config_loader():
     assert loader.config.EJS_NETPLAY_ICE_SERVERS == []
     assert loader.config.EJS_SETTINGS == {}
     assert loader.config.EJS_CONTROLS == {}
-    assert loader.config.GAMELIST_MEDIA_THUMBNAIL == "cover"
+    assert loader.config.GAMELIST_MEDIA_THUMBNAIL == "box2d"
     assert loader.config.GAMELIST_MEDIA_IMAGE == "screenshot"

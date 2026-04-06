@@ -125,7 +125,7 @@ class GamelistExporter:
                     "miximage_path"
                 ):
                     image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['miximage_path']}"
-            case "cover":
+            case "box2d":
                 if rom.path_cover_l:
                     image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.path_cover_l}"
 
