@@ -22,7 +22,7 @@ from typing import Any
 import asyncssh
 from anyio import open_file
 
-from config import SYNC_SSH_KEYS_PATH
+from config import SYNC_SSH_KEYS_PATH, SYNC_SSH_KNOWN_HOSTS_PATH
 from logger.logger import log
 
 
@@ -87,11 +87,17 @@ class SSHSyncHandler:
         port = sync_config.get("ssh_port", 22)
         username = sync_config.get("ssh_username", "root")
 
+        if not os.path.isfile(SYNC_SSH_KNOWN_HOSTS_PATH):
+            raise FileNotFoundError(
+                f"SSH known_hosts file not found at {SYNC_SSH_KNOWN_HOSTS_PATH}. "
+                "Mount a known_hosts file or set SYNC_SSH_KNOWN_HOSTS_PATH."
+            )
+
         connect_kwargs: dict[str, Any] = {
             "host": host,
             "port": port,
             "username": username,
-            "known_hosts": None,  # Accept all host keys (TODO: make configurable)
+            "known_hosts": SYNC_SSH_KNOWN_HOSTS_PATH,
         }
 
         # Resolve key path (explicit or convention-based)
@@ -107,10 +113,6 @@ class SSHSyncHandler:
                 "provide ssh_key_path/ssh_password in sync_config."
             )
 
-        log.warning(
-            f"SSH host key verification disabled for {host} -- "
-            "connection is vulnerable to MITM attacks"
-        )
         log.info(f"Connecting to {username}@{host}:{port}")
         return await asyncssh.connect(**connect_kwargs)
 

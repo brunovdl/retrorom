@@ -1,7 +1,7 @@
 """Add sync_sessions table and sync_config to devices
 
-Revision ID: 0073_sync_sessions
-Revises: 0072_client_tokens
+Revision ID: 0074_sync_sessions
+Revises: 0073_sibling_roms_metadata_only
 Create Date: 2026-03-14 00:00:00.000000
 
 """
@@ -12,8 +12,8 @@ from sqlalchemy.dialects.postgresql import ENUM
 
 from utils.database import is_postgresql
 
-revision = "0073_sync_sessions"
-down_revision = "0072_client_tokens"
+revision = "0074_sync_sessions"
+down_revision = "0073_sibling_roms_metadata_only"
 branch_labels = None
 depends_on = None
 

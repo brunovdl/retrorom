@@ -228,6 +228,9 @@ SYNC_PUSH_PULL_CRON: Final[str] = _get_env(
 SYNC_SSH_KEYS_PATH: Final[str] = _get_env(
     "SYNC_SSH_KEYS_PATH", f"{ROMM_BASE_PATH}/sync/keys"
 )
+SYNC_SSH_KNOWN_HOSTS_PATH: Final[str] = _get_env(
+    "SYNC_SSH_KNOWN_HOSTS_PATH", f"{ROMM_BASE_PATH}/sync/known_hosts"
+)
 
 # EMULATION
 DISABLE_EMULATOR_JS: Final[bool] = safe_str_to_bool(_get_env("DISABLE_EMULATOR_JS"))
