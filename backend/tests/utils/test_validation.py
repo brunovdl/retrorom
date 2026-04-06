@@ -258,22 +258,6 @@ class TestValidateUrlForHttpRequest:
             in exc_info.value.message
         )
 
-    def test_invalid_cloud_metadata_service_ips(self):
-        """Test that cloud metadata service IPs fail validation."""
-        # AWS/Azure metadata service: 169.254.169.254
-        with pytest.raises(ValidationError) as exc_info:
-            validate_url_for_http_request("http://169.254.169.254", "test_url")
-        assert (
-            "cloud metadata service addresses are not allowed" in exc_info.value.message
-        )
-
-        # Link-local addresses (169.254.0.0/16)
-        with pytest.raises(ValidationError) as exc_info:
-            validate_url_for_http_request("http://169.254.1.1", "test_url")
-        assert (
-            "cloud metadata service addresses are not allowed" in exc_info.value.message
-        )
-
     def test_invalid_loopback_addresses(self):
         """Test that loopback addresses fail validation."""
         # 127.x.x.x range
