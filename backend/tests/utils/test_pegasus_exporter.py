@@ -289,7 +289,7 @@ class TestCollectAssets:
             ("logo_path", "roms/1/1/logo/f.png", "logo"),
             ("physical_path", "roms/1/1/phys/f.png", "cartridge"),
             ("fanart_path", "roms/1/1/fan/f.jpg", "background"),
-            ("title_screen", "roms/1/1/ts/f.png", "titlescreen"),
+            ("title_screen_path", "roms/1/1/ts/f.png", "titlescreen"),
             ("bezel_path", "roms/1/1/bez/f.png", "bezel"),
         ],
     )
