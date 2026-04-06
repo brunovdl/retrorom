@@ -297,9 +297,6 @@ class ConfigManager:
             FIRMWARE_FOLDER_NAME=pydash.get(
                 self._raw_config, "filesystem.firmware_folder", "bios"
             ),
-            GAMELIST_AUTO_EXPORT_ON_SCAN=pydash.get(
-                self._raw_config, "scan.gamelist.export", False
-            ),
             SKIP_HASH_CALCULATION=pydash.get(
                 self._raw_config, "filesystem.skip_hash_calculation", False
             ),
@@ -372,15 +369,18 @@ class ConfigManager:
                     "manual",
                 ],
             ),
+            GAMELIST_AUTO_EXPORT_ON_SCAN=pydash.get(
+                self._raw_config, "scan.gamelist.export", False
+            ),
             GAMELIST_MEDIA_THUMBNAIL=pydash.get(
                 self._raw_config,
                 "scan.gamelist.media.thumbnail",
-                "cover",
+                MetadataMediaType.BOX2D,
             ),
             GAMELIST_MEDIA_IMAGE=pydash.get(
                 self._raw_config,
                 "scan.gamelist.media.image",
-                "screenshot",
+                MetadataMediaType.SCREENSHOT,
             ),
         )
 
@@ -597,6 +597,42 @@ class ConfigManager:
                     f"Invalid config.yml: scan.media.{media} is not a valid media type"
                 )
                 sys.exit(3)
+
+        valid_thumbnail_options = {
+            MetadataMediaType.BOX2D,
+            MetadataMediaType.BOX3D,
+            MetadataMediaType.MIXIMAGE,
+            MetadataMediaType.PHYSICAL,
+        }
+        if not isinstance(self.config.GAMELIST_MEDIA_THUMBNAIL, str):
+            log.critical(
+                "Invalid config.yml: scan.gamelist.media.thumbnail must be a string"
+            )
+            sys.exit(3)
+        if self.config.GAMELIST_MEDIA_THUMBNAIL not in valid_thumbnail_options:
+            log.critical(
+                f"Invalid config.yml: scan.gamelist.media.thumbnail must be one of {valid_thumbnail_options}"
+            )
+            sys.exit(3)
+
+        valid_image_options = {
+            MetadataMediaType.TITLE_SCREEN,
+            MetadataMediaType.MIXIMAGE,
+            MetadataMediaType.BOX2D,
+            MetadataMediaType.SCREENSHOT,
+        }
+
+        if not isinstance(self.config.GAMELIST_MEDIA_IMAGE, str):
+            log.critical(
+                "Invalid config.yml: scan.gamelist.media.image must be a string"
+            )
+            sys.exit(3)
+
+        if self.config.GAMELIST_MEDIA_IMAGE not in valid_image_options:
+            log.critical(
+                f"Invalid config.yml: scan.gamelist.media.image must be one of {valid_image_options}"
+            )
+            sys.exit(3)
 
     def get_config(self) -> Config:
         try:

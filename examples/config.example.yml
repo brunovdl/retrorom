@@ -138,7 +138,7 @@
 #     export: false # Whether to export gamelist.xml for ES-DE/Batocera/RetroBAT
 #     media:
 #       # Select a media type from the list above (eg. box2d, screenshot, etc.)
-#       thumbnail: cover # Use as the <thumbnail> tag in the exported gamelist.xml
+#       thumbnail: box2d # Use as the <thumbnail> tag in the exported gamelist.xml
 #       image: screenshot  # Use as the <image> tag in the exported gamelist.xml
 
 # EmulatorJS per-core options
