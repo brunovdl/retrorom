@@ -87,7 +87,7 @@ class SSHSyncHandler:
         port = sync_config.get("ssh_port", 22)
         username = sync_config.get("ssh_username", "root")
 
-        if not os.path.isfile(SYNC_SSH_KNOWN_HOSTS_PATH):
+        if not Path(SYNC_SSH_KNOWN_HOSTS_PATH).is_file():
             raise FileNotFoundError(
                 f"SSH known_hosts file not found at {SYNC_SSH_KNOWN_HOSTS_PATH}. "
                 "Mount a known_hosts file or set SYNC_SSH_KNOWN_HOSTS_PATH."
@@ -203,7 +203,7 @@ class SSHSyncHandler:
         """Upload a save file to a remote device."""
         async with conn.start_sftp_client() as sftp:
             # Ensure remote directory exists
-            remote_dir = os.path.dirname(remote_path)
+            remote_dir = str(Path(remote_path).parent)
             try:
                 await sftp.mkdir(remote_dir)
             except asyncssh.SFTPError:
