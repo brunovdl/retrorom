@@ -1,10 +1,14 @@
 from datetime import datetime
 from typing import Literal
 
+from pydantic import ConfigDict
+
 from .base import BaseModel
 
 
 class PlaySessionSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: int
     device_id: str | None
@@ -16,9 +20,6 @@ class PlaySessionSchema(BaseModel):
     duration_ms: int
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class PlaySessionIngestResult(BaseModel):

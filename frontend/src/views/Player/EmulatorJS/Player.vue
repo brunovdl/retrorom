@@ -455,6 +455,7 @@ function immediateExit() {
 
   playSessionApi
     .ingestPlaySessions({
+      deviceId: deviceIDRef.value,
       sessions: [
         {
           rom_id: romRef.value.id,

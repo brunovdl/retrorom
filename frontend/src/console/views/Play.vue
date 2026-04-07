@@ -23,6 +23,7 @@ import api from "@/services/api";
 import firmwareApi from "@/services/api/firmware";
 import playSessionApi from "@/services/api/play-session";
 import romApi from "@/services/api/rom";
+import storeAuth from "@/stores/auth";
 import storeConfig from "@/stores/config";
 import storeLanguage from "@/stores/language";
 import type { DetailedRom } from "@/stores/roms";
@@ -55,6 +56,7 @@ const createPlayerStorage = (romId: number, platformSlug: string) => ({
 const route = useRoute();
 const router = useRouter();
 const { getBezelImagePath } = useThemeAssets();
+const authStore = storeAuth();
 const configStore = storeConfig();
 const languageStore = storeLanguage();
 const { selectedLanguage } = storeToRefs(languageStore);
@@ -113,12 +115,16 @@ function immediateExit() {
   const durationMs = endTime.getTime() - sessionStartTime.getTime();
   if (durationMs < 1000) {
     // Don't log sessions under 1s, likely accidental opens
-    console.info("Play session too short, not logging");
-    return;
+    return router
+      .push({ name: ROUTES.CONSOLE_ROM, params: { rom: romId } })
+      .catch((error) => {
+        console.error("Error navigating to console rom", error);
+      });
   }
 
   playSessionApi
     .ingestPlaySessions({
+      deviceId: authStore.user?.current_device_id ?? undefined,
       sessions: [
         {
           rom_id: romRef.value.id,
