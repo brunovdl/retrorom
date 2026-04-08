@@ -135,7 +135,7 @@ function closeDialog() {
                   <div
                     :class="[
                       'text-sm font-weight-medium',
-                      exclusionType === item.type ? '' : '',
+                      exclusionType === item.type ? 'text-white' : '',
                     ]"
                   >
                     {{ item.title }}

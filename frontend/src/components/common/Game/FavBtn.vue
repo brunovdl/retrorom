@@ -22,7 +22,7 @@ async function switchFromFavorites() {
   <v-btn
     v-if="auth.scopes.includes('roms.user.write')"
     class="translucent text-shadow"
-    rouded="0"
+    rounded="0"
     size="small"
     variant="text"
     @click.stop="switchFromFavorites"
