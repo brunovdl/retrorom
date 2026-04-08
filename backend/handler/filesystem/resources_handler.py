@@ -20,12 +20,23 @@ from utils.validation import validate_url_for_http_request
 from .base_handler import CoverSize, FSHandler
 
 
+def _content_type_essence(header_value: str) -> str:
+    """Return the MIME type token (before parameters), lowercased."""
+    if not header_value:
+        return ""
+    essence = header_value.split(";", 1)[0].strip().lower()
+    return essence.lstrip("\ufeff").strip()
+
+
 def _check_content_type(
     response: httpx.Response, allowed_prefixes: tuple[str, ...], label: str
 ) -> bool:
-    content_type = response.headers.get("content-type", "").lower()
-    if not any(content_type.startswith(p) for p in allowed_prefixes):
-        log.warning(f"Unexpected content type for {label}: {content_type}")
+    raw = response.headers.get("content-type", "")
+    essence = _content_type_essence(raw)
+    if not essence or not any(essence.startswith(p) for p in allowed_prefixes):
+        log.warning(
+            f"Unexpected content type for {label}: {raw or '(missing header)'}",
+        )
         return False
     return True
 
