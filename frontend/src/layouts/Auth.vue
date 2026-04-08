@@ -14,7 +14,7 @@ const heartbeatStore = storeHeartbeat();
   <div id="language-selector">
     <LanguageSelector density="compact" />
   </div>
-  <span id="version" class="text-white text-subtitle-1 text-shadow">
+  <span id="version" class="text-subtitle-1 text-shadow">
     {{ heartbeatStore.value.SYSTEM.VERSION }}
   </span>
 </template>

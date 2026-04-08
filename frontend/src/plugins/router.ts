@@ -340,16 +340,25 @@ const routePermissions: RoutePermissions[] = [
   { path: ROUTES.ADMINISTRATION, requiredScopes: ["users.write"] },
 ];
 
+const authExemptRoutes = [
+  ROUTES.LOGIN,
+  ROUTES.SETUP,
+  ROUTES.RESET_PASSWORD,
+  ROUTES.REGISTER,
+  ROUTES.PAIR,
+] as const;
+
+type AuthExemptRoute = (typeof authExemptRoutes)[number];
+
+export function isAuthExemptRoute(route: string): route is AuthExemptRoute {
+  return (authExemptRoutes as readonly string[]).includes(route);
+}
+
 function checkRoutePermissions(route: string, user: User | null): boolean {
   // No checks needed for login and setup pages
-  if (
-    route === ROUTES.LOGIN ||
-    route === ROUTES.SETUP ||
-    route === ROUTES.RESET_PASSWORD ||
-    route === ROUTES.REGISTER ||
-    route === ROUTES.PAIR
-  )
+  if (isAuthExemptRoute(route)) {
     return true;
+  }
 
   // No user, no access
   if (!user) return false;
@@ -377,13 +386,7 @@ router.beforeEach(async (to, _from, next) => {
     }
 
     // Handle authentication
-    if (
-      !user.value &&
-      currentRoute !== ROUTES.LOGIN &&
-      currentRoute !== ROUTES.RESET_PASSWORD &&
-      currentRoute !== ROUTES.REGISTER &&
-      currentRoute !== ROUTES.PAIR
-    ) {
+    if (!user.value && (!currentRoute || !isAuthExemptRoute(currentRoute))) {
       return next({
         name: ROUTES.LOGIN,
         query: {

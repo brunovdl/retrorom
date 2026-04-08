@@ -320,7 +320,7 @@ onBeforeUnmount(() => {
                       !rom.launchbox_url_cover &&
                       !rom.flashpoint_url_cover)
                   "
-                  class="translucent text-white"
+                  class="translucent"
                   :class="
                     sizeActionBar === 1 ? 'text-subtitle-1' : 'text-caption'
                   "
@@ -340,7 +340,7 @@ onBeforeUnmount(() => {
                 </div>
               </v-expand-transition>
             </template>
-            <v-row no-gutters class="text-white px-1">
+            <v-row no-gutters class="px-1">
               <v-col>
                 <Sources v-if="!romsStore.isSimpleRom(rom)" :rom="rom" />
                 <Flags
@@ -372,7 +372,7 @@ onBeforeUnmount(() => {
                   />
                   <v-chip
                     v-if="rom.hasheous_id"
-                    class="translucent text-white mr-1 mb-1 px-1"
+                    class="translucent mr-1 mb-1 px-1"
                     density="compact"
                     title="Verified with Hasheous"
                   >
@@ -380,7 +380,7 @@ onBeforeUnmount(() => {
                   </v-chip>
                   <v-chip
                     v-if="rom.siblings.length > 0 && showSiblings"
-                    class="translucent text-white mr-1 mb-1 px-1"
+                    class="translucent mr-1 mb-1 px-1"
                     density="compact"
                     :title="`${rom.siblings.length} sibling(s)`"
                   >
@@ -391,13 +391,13 @@ onBeforeUnmount(() => {
                     text="Favorite"
                     color="secondary"
                     density="compact"
-                    class="translucent text-white mr-1 mb-1 px-1"
+                    class="translucent mr-1 mb-1 px-1"
                   >
                     <v-icon>mdi-star</v-icon>
                   </v-chip>
                   <v-chip
                     v-if="rom.has_notes && showChips"
-                    class="translucent text-white mr-1 mb-1 px-1"
+                    class="translucent mr-1 mb-1 px-1"
                     density="compact"
                     title="View notes"
                     @click.stop="showNoteDialog"

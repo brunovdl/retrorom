@@ -301,7 +301,7 @@ function updateOptions({ sortBy }: { sortBy: SortBy }) {
               </v-chip>
               <v-chip
                 v-if="item.siblings.length > 0 && showSiblings"
-                class="translucent text-white mr-1 px-1 item-chip"
+                class="translucent mr-1 px-1 item-chip"
                 size="x-small"
                 :title="`${item.siblings.length} sibling(s)`"
               >
@@ -309,7 +309,7 @@ function updateOptions({ sortBy }: { sortBy: SortBy }) {
               </v-chip>
               <v-chip
                 v-if="item.has_notes"
-                class="translucent text-white mr-1 px-1"
+                class="translucent mr-1 px-1"
                 chip
                 size="x-small"
                 title="View notes"

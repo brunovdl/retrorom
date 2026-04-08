@@ -64,11 +64,7 @@ const hashMatches = computed(() => {
 </script>
 <template>
   <div>
-    <v-row
-      class="text-white text-shadow"
-      :class="{ 'text-center my-4': smAndDown }"
-      no-gutters
-    >
+    <v-row :class="{ 'text-center my-4': smAndDown }" no-gutters>
       <v-col>
         <p class="text-h5 font-weight-bold pl-0 position-relative">
           <span>{{ rom.name }}</span>
@@ -77,11 +73,7 @@ const hashMatches = computed(() => {
       </v-col>
     </v-row>
 
-    <v-row
-      class="text-white text-shadow mt-2"
-      :class="{ 'text-center': smAndDown }"
-      no-gutters
-    >
+    <v-row class="mt-2" :class="{ 'text-center': smAndDown }" no-gutters>
       <v-col>
         <v-chip
           :to="{ name: ROUTES.PLATFORM, params: { platform: rom.platform_id } }"
@@ -115,7 +107,7 @@ const hashMatches = computed(() => {
 
     <v-row
       v-if="rom.is_identified"
-      class="text-white text-shadow mt-2"
+      class="mt-2"
       :class="{ 'text-center': smAndDown }"
       no-gutters
     >
@@ -340,7 +332,7 @@ const hashMatches = computed(() => {
     </v-row>
     <v-row
       v-if="rom.hasheous_id"
-      class="text-white text-shadow mt-2"
+      class="mt-2"
       :class="{ 'text-center': smAndDown }"
       no-gutters
     >

@@ -62,7 +62,7 @@ watch(menuOpen, (val) => {
 </script>
 
 <template>
-  <v-row no-gutters class="text-white">
+  <v-row no-gutters>
     <v-col class="d-flex">
       <v-btn
         class="action-bar-btn-small flex-grow-1"

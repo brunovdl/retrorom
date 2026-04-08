@@ -455,9 +455,7 @@ onMounted(() => {
           <v-stepper-header style="box-shadow: unset">
             <v-stepper-item :value="1">
               <template #title>
-                <span class="text-white text-shadow">{{
-                  t("setup.library-structure-step")
-                }}</span>
+                <span>{{ t("setup.library-structure-step") }}</span>
               </template>
             </v-stepper-item>
 
@@ -465,9 +463,7 @@ onMounted(() => {
 
             <v-stepper-item :value="2">
               <template #title>
-                <span class="text-white text-shadow">{{
-                  t("setup.admin-user-step")
-                }}</span>
+                <span>{{ t("setup.admin-user-step") }}</span>
               </template>
             </v-stepper-item>
 
@@ -475,9 +471,7 @@ onMounted(() => {
 
             <v-stepper-item :value="3">
               <template #title>
-                <span class="text-white text-shadow">{{
-                  t("setup.check-metadata-step")
-                }}</span>
+                <span>{{ t("setup.check-metadata-step") }}</span>
               </template>
             </v-stepper-item>
           </v-stepper-header>
@@ -485,7 +479,7 @@ onMounted(() => {
 
         <!-- Mobile title section -->
         <div v-if="xs" class="flex-grow-0 text-center">
-          <span class="text-white text-shadow text-subtitle-1">
+          <span class="text-subtitle-1">
             <span v-if="step === 1">{{
               t("setup.library-structure-step")
             }}</span>
@@ -523,7 +517,7 @@ onMounted(() => {
                   <!-- Structure info -->
                   <v-row no-gutters class="mb-3">
                     <v-col class="text-center">
-                      <p class="text-white text-shadow">
+                      <p>
                         <strong>{{ t("setup.folder-structure") }}:</strong>
                         {{
                           libraryInfo?.detected_structure === "struct_a"
@@ -555,7 +549,7 @@ onMounted(() => {
                         md="6"
                         class="pr-2"
                       >
-                        <div class="text-white text-center text-shadow mb-2">
+                        <div class="text-center mb-2">
                           <strong>{{ t("setup.detected-platforms") }}</strong>
                         </div>
                         <div class="mb-2 ml-4">
@@ -583,7 +577,7 @@ onMounted(() => {
                         :md="hasExistingPlatforms ? 6 : 12"
                         class="pl-2"
                       >
-                        <div class="text-white text-center text-shadow mb-2">
+                        <div class="text-center mb-2">
                           <strong>{{
                             hasExistingPlatforms
                               ? t("setup.supported-platforms")
@@ -623,17 +617,10 @@ onMounted(() => {
                     <!-- Mobile: Tabs for each section -->
                     <v-col v-else cols="12">
                       <v-tabs v-model="mobileTab" centered grow class="mb-3">
-                        <v-tab
-                          v-if="hasExistingPlatforms"
-                          :value="0"
-                          class="text-white text-shadow"
-                        >
+                        <v-tab v-if="hasExistingPlatforms" :value="0">
                           {{ t("setup.detected-platforms") }}
                         </v-tab>
-                        <v-tab
-                          :value="hasExistingPlatforms ? 1 : 0"
-                          class="text-white text-shadow"
-                        >
+                        <v-tab :value="hasExistingPlatforms ? 1 : 0">
                           {{ t("setup.supported-platforms") }}
                         </v-tab>
                       </v-tabs>
@@ -783,7 +770,6 @@ onMounted(() => {
                     <v-list-item
                       v-for="source in metadataOptions"
                       :key="source.value"
-                      class="text-white text-shadow"
                       :title="source.name"
                       :subtitle="
                         source.disabled ? t('setup.metadata-missing') : ''
@@ -809,18 +795,12 @@ onMounted(() => {
         <div class="flex-grow-0">
           <v-stepper-actions :disabled="step == 2 && !filledAdminUser">
             <template #prev>
-              <v-btn
-                class="text-white text-shadow"
-                :ripple="false"
-                :disabled="isFirstStep"
-                @click="prev"
-              >
+              <v-btn :ripple="false" :disabled="isFirstStep" @click="prev">
                 {{ isFirstStep ? "" : t("setup.previous") }}
               </v-btn>
             </template>
             <template #next>
               <v-btn
-                class="text-white text-shadow"
                 :loading="isLastStep && creatingPlatforms"
                 @click="!isLastStep ? handleNext(next) : finishWizard()"
                 @keydown.enter="!isLastStep ? handleNext(next) : finishWizard()"

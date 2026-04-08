@@ -43,7 +43,7 @@ const countSelectedInGroup = (platforms: Platform[]) => {
       :value="baseIndex ? index + baseIndex : index"
       class="bg-transparent"
     >
-      <v-expansion-panel-title class="text-white text-shadow">
+      <v-expansion-panel-title>
         <template #default>
           <div class="d-flex align-center w-100">
             <v-checkbox

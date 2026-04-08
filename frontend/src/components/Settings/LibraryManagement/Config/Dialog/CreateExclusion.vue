@@ -129,15 +129,13 @@ function closeDialog() {
                     size="32"
                     :class="[
                       'mb-2',
-                      exclusionType === item.type
-                        ? 'text-white'
-                        : 'text-primary',
+                      exclusionType === item.type ? '' : 'text-primary',
                     ]"
                   />
                   <div
                     :class="[
                       'text-sm font-weight-medium',
-                      exclusionType === item.type ? 'text-white' : '',
+                      exclusionType === item.type ? '' : '',
                     ]"
                   >
                     {{ item.title }}
@@ -146,7 +144,7 @@ function closeDialog() {
                     :class="[
                       'text-xs mt-1',
                       exclusionType === item.type
-                        ? 'text-white opacity-90'
+                        ? 'opacity-90'
                         : 'text-romm-gray',
                     ]"
                   >

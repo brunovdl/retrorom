@@ -171,7 +171,7 @@ watch(
                   rounded="1"
                   v-bind="activatorProps"
                   variant="flat"
-                  class="my-1 text-grey-lighten-2"
+                  class="my-1"
                   style="padding: 10px 14px"
                   @click="toggleMainSibling"
                 >
