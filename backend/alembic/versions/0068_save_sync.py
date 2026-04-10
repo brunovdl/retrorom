@@ -76,8 +76,12 @@ def upgrade():
     )
 
     with op.batch_alter_table("saves", schema=None) as batch_op:
-        batch_op.add_column(sa.Column("slot", sa.String(255), nullable=True))
-        batch_op.add_column(sa.Column("content_hash", sa.String(32), nullable=True))
+        batch_op.add_column(
+            sa.Column("slot", sa.String(255), nullable=True), if_not_exists=True
+        )
+        batch_op.add_column(
+            sa.Column("content_hash", sa.String(32), nullable=True), if_not_exists=True
+        )
 
     op.create_index("ix_devices_user_id", "devices", ["user_id"])
     op.create_index("ix_devices_last_seen", "devices", ["last_seen"])
@@ -96,8 +100,8 @@ def downgrade():
     op.drop_index("ix_devices_user_id", "devices")
 
     with op.batch_alter_table("saves", schema=None) as batch_op:
-        batch_op.drop_column("content_hash")
-        batch_op.drop_column("slot")
+        batch_op.drop_column("content_hash", if_exists=True)
+        batch_op.drop_column("slot", if_exists=True)
 
     op.drop_table("device_save_sync", if_exists=True)
     op.drop_table("devices", if_exists=True)

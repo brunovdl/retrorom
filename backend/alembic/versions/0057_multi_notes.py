@@ -98,25 +98,29 @@ def upgrade() -> None:
                 "user_id": row.user_id,
             },
         )
-        # Remove the old note columns from rom_user table in a future migration
-        # op.drop_column("rom_user", "note_raw_markdown")
-        # op.drop_column("rom_user", "note_is_public")
+        # TODO: Remove the old note columns from rom_user table in a future migration
 
 
 def downgrade() -> None:
     """Drop the rom_notes table and restore note columns to rom_user."""
 
     # Add back the old columns to rom_user
-    op.add_column(
-        "rom_user",
-        sa.Column("note_raw_markdown", sa.Text(), nullable=False, server_default=""),
-    )
-    op.add_column(
-        "rom_user",
-        sa.Column(
-            "note_is_public", sa.Boolean(), nullable=False, server_default=text("false")
-        ),
-    )
+    with op.batch_alter_table("rom_user", schema=None) as batch_op:
+        batch_op.add_column(
+            sa.Column(
+                "note_raw_markdown", sa.Text(), nullable=False, server_default=""
+            ),
+            if_not_exists=True,
+        )
+        batch_op.add_column(
+            sa.Column(
+                "note_is_public",
+                sa.Boolean(),
+                nullable=False,
+                server_default=text("false"),
+            ),
+            if_not_exists=True,
+        )
 
     # Migrate notes back to rom_user (take first note per user/rom)
     connection = op.get_bind()

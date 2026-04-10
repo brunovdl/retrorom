@@ -252,12 +252,15 @@ def upgrade() -> None:
                 """),
         )
 
-    op.drop_column("collections", "roms")
+    with op.batch_alter_table("collections", schema=None) as batch_op:
+        batch_op.drop_column("roms", if_exists=True)
 
 
 def downgrade() -> None:
     with op.batch_alter_table("collections", schema=None) as batch_op:
-        batch_op.add_column(sa.Column("roms", CustomJSON(), nullable=True))
+        batch_op.add_column(
+            sa.Column("roms", CustomJSON(), nullable=True), if_not_exists=True
+        )
 
     connection = op.get_bind()
     if is_postgresql(connection):

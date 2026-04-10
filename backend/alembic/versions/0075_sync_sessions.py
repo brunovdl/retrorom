@@ -94,11 +94,16 @@ def upgrade() -> None:
     op.create_index("ix_sync_sessions_user_id", "sync_sessions", ["user_id"])
     op.create_index("ix_sync_sessions_status", "sync_sessions", ["status"])
 
-    op.add_column("devices", sa.Column("sync_config", sa.JSON(), nullable=True))
+    with op.batch_alter_table("roms", schema=None) as batch_op:
+        batch_op.add_column(
+            sa.Column("sync_config", sa.JSON(), nullable=True),
+            if_not_exists=True,
+        )
 
 
 def downgrade() -> None:
-    op.drop_column("devices", "sync_config")
+    with op.batch_alter_table("roms", schema=None) as batch_op:
+        batch_op.drop_column("sync_config", if_exists=True)
 
     op.drop_index("ix_sync_sessions_status", table_name="sync_sessions")
 
