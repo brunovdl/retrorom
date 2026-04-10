@@ -32,13 +32,14 @@ def upgrade() -> None:
             sa.Column("logo_path", sa.String(length=1000), nullable=True),
             sa.Column("n_roms", sa.Integer(), nullable=True),
             sa.PrimaryKeyConstraint("fs_slug"),
+            if_not_exists=True,
         )
         batch_op.execute(
             "INSERT INTO platforms(igdb_id, sgdb_id, slug, fs_slug, name, logo_path, n_roms) \
                             SELECT igdb_id, sgdb_id, slug, slug, name, logo_path, n_roms \
                             FROM old_platforms"
         )
-        op.drop_table("old_platforms")
+        op.drop_table("old_platforms", if_exists=True)
 
     with op.batch_alter_table("roms") as batch_op:
         batch_op.add_column(sa.Column("p_name", sa.String(length=150), nullable=True))
@@ -85,6 +86,7 @@ def upgrade() -> None:
             sa.Column("files", CustomJSON(), nullable=True),
             sa.Column("url_cover", sa.Text(), nullable=True),
             sa.PrimaryKeyConstraint("id"),
+            if_not_exists=True,
         )
         batch_op.execute("INSERT INTO roms(\
                             r_igdb_id, p_igdb_id, r_sgdb_id, p_sgdb_id, p_slug, p_name, \
@@ -97,7 +99,7 @@ def upgrade() -> None:
                             file_size_units, r_name, r_slug, summary, path_cover_s, path_cover_l, has_cover, \
                             region, revision, tags, multi, files, url_cover \
                             FROM old_roms")
-        op.drop_table("old_roms")
+        op.drop_table("old_roms", if_exists=True)
     # ### end Alembic commands ###
 
 

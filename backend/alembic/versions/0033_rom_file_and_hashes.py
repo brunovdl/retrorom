@@ -79,6 +79,7 @@ def upgrade() -> None:
         ),
         sa.ForeignKeyConstraint(["rom_id"], ["roms.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
+        if_not_exists=True,
     )
 
     if is_postgresql(connection):
@@ -255,7 +256,7 @@ def downgrade() -> None:
                 roms.file_size_bytes = aggregated_data.total_size;
             """)
 
-    op.drop_table("rom_files")
+    op.drop_table("rom_files", if_exists=True)
 
     if is_postgresql(connection):
         ENUM(name="romfilecategory").drop(connection, checkfirst=False)

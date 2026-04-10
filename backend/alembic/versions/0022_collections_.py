@@ -113,6 +113,7 @@ def upgrade() -> None:
             ),
             sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
             sa.PrimaryKeyConstraint("id"),
+            if_not_exists=True,
         )
 
     with op.batch_alter_table("rom_user", schema=None) as batch_op:
@@ -133,5 +134,5 @@ def downgrade() -> None:
             nullable=False,
         )
 
-    op.drop_table("collections")
+    op.drop_table("collections", if_exists=True)
     # ### end Alembic commands ###

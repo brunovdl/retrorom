@@ -48,6 +48,7 @@ def upgrade():
             nullable=False,
         ),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
+        if_not_exists=True,
     )
 
     op.create_table(
@@ -71,6 +72,7 @@ def upgrade():
         sa.ForeignKeyConstraint(["device_id"], ["devices.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["save_id"], ["saves.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("device_id", "save_id"),
+        if_not_exists=True,
     )
 
     with op.batch_alter_table("saves", schema=None) as batch_op:
@@ -97,6 +99,6 @@ def downgrade():
         batch_op.drop_column("content_hash")
         batch_op.drop_column("slot")
 
-    op.drop_table("device_save_sync")
-    op.drop_table("devices")
+    op.drop_table("device_save_sync", if_exists=True)
+    op.drop_table("devices", if_exists=True)
     op.execute("DROP TYPE IF EXISTS syncmode")

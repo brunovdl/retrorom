@@ -32,6 +32,7 @@ def upgrade() -> None:
         ),
         sa.Column("avatar_path", sa.String(length=255), nullable=True),
         sa.PrimaryKeyConstraint("id"),
+        if_not_exists=True,
     )
     with op.batch_alter_table("users", schema=None) as batch_op:
         batch_op.create_index(
@@ -47,7 +48,7 @@ def downgrade() -> None:
     with op.batch_alter_table("users", schema=None) as batch_op:
         batch_op.drop_index(batch_op.f("ix_users_username"))
 
-    op.drop_table("users")
+    op.drop_table("users", if_exists=True)
 
     if is_postgresql(connection):
         ENUM(name="role").drop(connection, checkfirst=False)

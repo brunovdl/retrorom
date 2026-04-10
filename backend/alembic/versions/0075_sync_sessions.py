@@ -88,6 +88,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["device_id"], ["devices.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
+        if_not_exists=True,
     )
     op.create_index("ix_sync_sessions_device_id", "sync_sessions", ["device_id"])
     op.create_index("ix_sync_sessions_user_id", "sync_sessions", ["user_id"])
@@ -101,7 +102,7 @@ def downgrade() -> None:
 
     op.drop_index("ix_sync_sessions_status", table_name="sync_sessions")
 
-    op.drop_table("sync_sessions")
+    op.drop_table("sync_sessions", if_exists=True)
 
     connection = op.get_bind()
     if is_postgresql(connection):

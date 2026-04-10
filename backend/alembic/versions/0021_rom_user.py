@@ -42,6 +42,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("rom_id", "user_id", name="unique_rom_user_props"),
+        if_not_exists=True,
     )
 
     op.execute("""
@@ -50,7 +51,7 @@ def upgrade() -> None:
         FROM rom_notes
     """)
 
-    op.drop_table("rom_notes")
+    op.drop_table("rom_notes", if_exists=True)
     # ### end Alembic commands ###
 
 
@@ -79,6 +80,7 @@ def downgrade() -> None:
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("rom_id", "user_id", name="unique_rom_user_note"),
+        if_not_exists=True,
     )
 
     # Copy the data back from the new table to the old table
@@ -89,5 +91,5 @@ def downgrade() -> None:
     """)
 
     # Drop the new table
-    op.drop_table("rom_user")
+    op.drop_table("rom_user", if_exists=True)
     # ### end Alembic commands ###

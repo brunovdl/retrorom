@@ -48,6 +48,7 @@ def upgrade() -> None:
         sa.UniqueConstraint(
             "rom_id", "user_id", "title", name="unique_rom_user_note_title"
         ),
+        if_not_exists=True,
     )
 
     # Create indexes for performance
@@ -146,4 +147,4 @@ def downgrade() -> None:
     op.drop_index("idx_rom_notes_rom_user", table_name="rom_notes")
     op.drop_index("idx_rom_notes_public", table_name="rom_notes")
 
-    op.drop_table("rom_notes")
+    op.drop_table("rom_notes", if_exists=True)

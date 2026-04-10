@@ -108,6 +108,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["rom_id"], ["roms.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
+        if_not_exists=True,
     )
     op.create_table(
         "screenshots",
@@ -129,6 +130,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["rom_id"], ["roms.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
+        if_not_exists=True,
     )
     op.create_table(
         "states",
@@ -151,6 +153,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["rom_id"], ["roms.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
+        if_not_exists=True,
     )
 
     # Drop the constraint to platform slug
@@ -334,6 +337,6 @@ def downgrade() -> None:
             ondelete="CASCADE",
         )
 
-    op.drop_table("states")
-    op.drop_table("screenshots")
-    op.drop_table("saves")
+    op.drop_table("states", if_exists=True)
+    op.drop_table("screenshots", if_exists=True)
+    op.drop_table("saves", if_exists=True)

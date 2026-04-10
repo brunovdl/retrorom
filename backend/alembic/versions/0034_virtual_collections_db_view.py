@@ -41,6 +41,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["rom_id"], ["roms.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("collection_id", "rom_id"),
         sa.UniqueConstraint("collection_id", "rom_id", name="unique_collection_rom"),
+        if_not_exists=True,
     )
 
     connection = op.get_bind()
@@ -285,7 +286,7 @@ def downgrade() -> None:
     with op.batch_alter_table("collections", schema=None) as batch_op:
         batch_op.alter_column("roms", existing_type=CustomJSON(), nullable=False)
 
-    op.drop_table("collections_roms")
+    op.drop_table("collections_roms", if_exists=True)
 
     connection.execute(
         sa.text("""
