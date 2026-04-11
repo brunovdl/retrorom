@@ -39,6 +39,18 @@ done
 export ROMM_BASE_PATH=${ROMM_BASE_PATH:-/romm}
 export ROMM_PORT=${ROMM_PORT:-8080}
 
+# Disable nginx access logs when log level is WARNING, ERROR, or CRITICAL
+loglevel="${LOGLEVEL:-INFO}"
+loglevel="${loglevel^^}"
+case "${loglevel}" in
+WARNING | WARN | ERROR | CRITICAL)
+	export NGINX_ACCESS_LOG="access_log off;"
+	;;
+*)
+	export NGINX_ACCESS_LOG=""
+	;;
+esac
+
 # Set IPV6_LISTEN based on IPV4_ONLY
 if [[ ${IPV4_ONLY} == "true" ]]; then
 	export IPV6_LISTEN="#listen [::]:${ROMM_PORT};"
