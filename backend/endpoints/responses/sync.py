@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import ConfigDict
 
 from .base import BaseModel, UTCDatetime
+from .play_session import PlaySessionIngestResponse
 
 
 class SyncOperationSchema(BaseModel):
@@ -41,3 +42,8 @@ class SyncSessionSchema(BaseModel):
     error_message: str | None = None
     created_at: UTCDatetime
     updated_at: UTCDatetime
+
+
+class SyncCompleteResponse(BaseModel):
+    session: SyncSessionSchema
+    play_session_ingest: PlaySessionIngestResponse | None = None

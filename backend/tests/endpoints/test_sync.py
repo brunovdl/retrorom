@@ -1,6 +1,6 @@
 """Tests for sync endpoints."""
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from unittest import mock
 
 from fastapi import status
@@ -8,6 +8,7 @@ from fastapi import status
 from handler.database import (
     db_device_handler,
     db_device_save_sync_handler,
+    db_play_session_handler,
     db_sync_session_handler,
 )
 from models.assets import Save
@@ -153,9 +154,10 @@ class TestSyncSessions:
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert data["status"] == "COMPLETED"
-        assert data["operations_completed"] == 5
-        assert data["operations_failed"] == 1
+        assert data["session"]["status"] == "COMPLETED"
+        assert data["session"]["operations_completed"] == 5
+        assert data["session"]["operations_failed"] == 1
+        assert data["play_session_ingest"] is None
 
     def test_complete_session_not_found(self, client, access_token: str):
         response = client.post(
@@ -527,3 +529,125 @@ class TestNegotiateAdvanced:
             headers={"Authorization": f"Bearer {access_token}"},
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+def _play_session(rom_id=None, start_offset_hours=-1, duration_minutes=30):
+    now = datetime.now(timezone.utc)
+    start = now + timedelta(hours=start_offset_hours)
+    end = start + timedelta(minutes=duration_minutes)
+    return {
+        "rom_id": rom_id,
+        "start_time": start.isoformat(),
+        "end_time": end.isoformat(),
+        "duration_ms": duration_minutes * 60 * 1000,
+    }
+
+
+class TestSyncCompleteWithPlaySessions:
+    def test_complete_with_play_sessions(
+        self, client, access_token: str, admin_user: User, rom: Rom
+    ):
+        device = db_device_handler.add_device(
+            Device(id="sync-ps-dev-1", user_id=admin_user.id)
+        )
+        sync_session = db_sync_session_handler.create_session(
+            device_id=device.id, user_id=admin_user.id
+        )
+
+        response = client.post(
+            f"/api/sync/sessions/{sync_session.id}/complete",
+            json={
+                "operations_completed": 1,
+                "operations_failed": 0,
+                "play_sessions": [
+                    _play_session(rom_id=rom.id, start_offset_hours=-2),
+                    _play_session(rom_id=rom.id, start_offset_hours=-4),
+                ],
+            },
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["session"]["status"] == "COMPLETED"
+        assert data["play_session_ingest"] is not None
+        assert data["play_session_ingest"]["created_count"] == 2
+        assert data["play_session_ingest"]["skipped_count"] == 0
+
+    def test_play_sessions_have_sync_session_id(
+        self, client, access_token: str, admin_user: User, rom: Rom
+    ):
+        device = db_device_handler.add_device(
+            Device(id="sync-ps-dev-2", user_id=admin_user.id)
+        )
+        sync_session = db_sync_session_handler.create_session(
+            device_id=device.id, user_id=admin_user.id
+        )
+
+        client.post(
+            f"/api/sync/sessions/{sync_session.id}/complete",
+            json={
+                "operations_completed": 0,
+                "operations_failed": 0,
+                "play_sessions": [
+                    _play_session(rom_id=rom.id, start_offset_hours=-3),
+                ],
+            },
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        sessions = db_play_session_handler.get_sessions(
+            user_id=admin_user.id, rom_id=rom.id
+        )
+        assert len(sessions) >= 1
+        linked = [s for s in sessions if s.sync_session_id == sync_session.id]
+        assert len(linked) == 1
+
+    def test_play_sessions_use_device_from_sync_session(
+        self, client, access_token: str, admin_user: User, rom: Rom
+    ):
+        device = db_device_handler.add_device(
+            Device(id="sync-ps-dev-3", user_id=admin_user.id)
+        )
+        sync_session = db_sync_session_handler.create_session(
+            device_id=device.id, user_id=admin_user.id
+        )
+
+        client.post(
+            f"/api/sync/sessions/{sync_session.id}/complete",
+            json={
+                "operations_completed": 0,
+                "operations_failed": 0,
+                "play_sessions": [
+                    _play_session(rom_id=rom.id, start_offset_hours=-5),
+                ],
+            },
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        sessions = db_play_session_handler.get_sessions(
+            user_id=admin_user.id, rom_id=rom.id
+        )
+        assert len(sessions) >= 1
+        assert sessions[0].device_id == device.id
+
+    def test_complete_without_play_sessions_backward_compatible(
+        self, client, access_token: str, admin_user: User
+    ):
+        device = db_device_handler.add_device(
+            Device(id="sync-ps-dev-4", user_id=admin_user.id)
+        )
+        sync_session = db_sync_session_handler.create_session(
+            device_id=device.id, user_id=admin_user.id
+        )
+
+        response = client.post(
+            f"/api/sync/sessions/{sync_session.id}/complete",
+            json={"operations_completed": 3, "operations_failed": 0},
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["session"]["status"] == "COMPLETED"
+        assert data["play_session_ingest"] is None

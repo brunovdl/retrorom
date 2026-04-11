@@ -1,11 +1,17 @@
 from datetime import datetime
 
 from fastapi import HTTPException, Request, status
+from pydantic import Field, model_validator
 
 from config import TASK_TIMEOUT
 from decorators.auth import protected_route
 from endpoints.responses.base import BaseModel
+from endpoints.responses.play_session import (
+    PlaySessionIngestResponse,
+    PlaySessionIngestResult,
+)
 from endpoints.responses.sync import (
+    SyncCompleteResponse,
     SyncNegotiateResponse,
     SyncOperationSchema,
     SyncSessionSchema,
@@ -17,6 +23,7 @@ from handler.database import (
     db_save_handler,
     db_sync_session_handler,
 )
+from handler.play_session_handler import ingest_play_sessions
 from handler.redis_handler import high_prio_queue
 from handler.sync.comparison import compare_save_state
 from logger.logger import log
@@ -47,9 +54,26 @@ class SyncNegotiatePayload(BaseModel):
     saves: list[ClientSaveState]
 
 
+class SyncPlaySessionEntry(BaseModel):
+    rom_id: int | None = None
+    save_slot: str | None = None
+    start_time: datetime
+    end_time: datetime
+    duration_ms: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def validate_times(self) -> "SyncPlaySessionEntry":
+        self.start_time = self.start_time.replace(microsecond=0)
+        self.end_time = self.end_time.replace(microsecond=0)
+        if self.end_time <= self.start_time:
+            raise ValueError("end_time must be after start_time")
+        return self
+
+
 class SyncCompletePayload(BaseModel):
     operations_completed: int = 0
     operations_failed: int = 0
+    play_sessions: list[SyncPlaySessionEntry] | None = None
 
 
 @protected_route(router.post, "/negotiate", [Scope.ASSETS_READ, Scope.DEVICES_READ])
@@ -256,8 +280,8 @@ def complete_sync_session(
     request: Request,
     session_id: int,
     payload: SyncCompletePayload,
-) -> SyncSessionSchema:
-    """Mark a sync session as completed."""
+) -> SyncCompleteResponse:
+    """Mark a sync session as completed, optionally ingesting play sessions."""
     sync_session = db_sync_session_handler.get_session(
         session_id=session_id, user_id=request.user.id
     )
@@ -287,7 +311,42 @@ def complete_sync_session(
         f"{payload.operations_completed} succeeded, {payload.operations_failed} failed"
     )
 
-    return SyncSessionSchema.model_validate(completed)
+    play_session_ingest = None
+    if payload.play_sessions:
+        summary = ingest_play_sessions(
+            user_id=request.user.id,
+            username=request.user.username,
+            entries=[
+                {
+                    "rom_id": s.rom_id,
+                    "save_slot": s.save_slot,
+                    "start_time": s.start_time,
+                    "end_time": s.end_time,
+                    "duration_ms": s.duration_ms,
+                }
+                for s in payload.play_sessions
+            ],
+            device_id=sync_session.device_id,
+            sync_session_id=session_id,
+        )
+        play_session_ingest = PlaySessionIngestResponse(
+            results=[
+                PlaySessionIngestResult(
+                    index=r["index"],
+                    status=r["status"],
+                    id=r.get("id"),
+                    detail=r.get("detail"),
+                )
+                for r in summary["results"]
+            ],
+            created_count=summary["created_count"],
+            skipped_count=summary["skipped_count"],
+        )
+
+    return SyncCompleteResponse(
+        session=SyncSessionSchema.model_validate(completed),
+        play_session_ingest=play_session_ingest,
+    )
 
 
 @protected_route(router.get, "/sessions", [Scope.DEVICES_READ])
