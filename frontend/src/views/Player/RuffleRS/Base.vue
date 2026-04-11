@@ -53,6 +53,8 @@ function onPlay() {
       allowFullScreen: true,
       autoplay: "on",
       backgroundColor: backgroundColor.value,
+      forceAlign: true,
+      forceScale: true,
       letterbox: "on",
       openUrlMode: "confirm",
       publicPath: "/assets/ruffle/",
