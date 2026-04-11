@@ -93,6 +93,48 @@ start_bin_gunicorn() {
 	# cleanup potentially leftover socket
 	rm /tmp/gunicorn.sock -f
 
+	# Generate gunicorn logging config with the configured log level
+	cat >/etc/gunicorn/logging.conf <<EOF
+[loggers]
+keys=root,gunicorn,error
+
+[handlers]
+keys=console_gunicorn
+
+[formatters]
+keys=gunicorn_format
+
+# Root logger — KEEP but minimal
+[logger_root]
+level=WARNING
+handlers=
+
+# Gunicorn internal logger
+[logger_gunicorn]
+level=${LOGLEVEL}
+handlers=console_gunicorn
+qualname=gunicorn
+propagate=0
+
+# Gunicorn error logger (optional)
+[logger_error]
+level=${LOGLEVEL}
+handlers=console_gunicorn
+qualname=gunicorn.error
+propagate=0
+
+# Handler for Gunicorn logs
+[handler_console_gunicorn]
+class=StreamHandler
+formatter=gunicorn_format
+args=(sys.stdout,)
+
+# Formatter for Gunicorn logs
+[formatter_gunicorn_format]
+format=INFO:     [RomM][gunicorn][%%(asctime)s] %%(message)s
+datefmt=%Y-%m-%d %H:%M:%S
+EOF
+
 	# commands to start our main application and store its PID to check for crashes
 	info_log "Starting backend"
 

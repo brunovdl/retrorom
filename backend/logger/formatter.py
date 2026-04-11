@@ -3,7 +3,7 @@ from pprint import pformat
 
 from colorama import Fore, Style, init
 
-from config import FORCE_COLOR, NO_COLOR
+from config import FORCE_COLOR, LOGLEVEL, NO_COLOR
 
 RED = Fore.RED
 LIGHTRED = Fore.LIGHTRED_EX
@@ -33,16 +33,16 @@ LOGGING_CONFIG = {
     },
     "root": {
         "handlers": ["default"],
-        "level": "INFO",
+        "level": LOGLEVEL,
     },
     "loggers": {
         "uvicorn": {
-            "level": "INFO",
+            "level": LOGLEVEL,
             "handlers": ["default"],
             "propagate": False,
         },
         "uvicorn.error": {
-            "level": "INFO",
+            "level": LOGLEVEL,
             "handlers": ["default"],
             "propagate": False,
         },
