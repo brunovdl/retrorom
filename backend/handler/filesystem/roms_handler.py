@@ -120,7 +120,7 @@ def is_compressed_file(file_path: str) -> bool:
     mime = magic.Magic(mime=True)
     file_type = mime.from_file(file_path)
 
-    return file_type in COMPRESSED_MIME_TYPES or file_path.endswith(
+    return file_type in COMPRESSED_MIME_TYPES or file_path.lower().endswith(
         tuple(COMPRESSED_FILE_EXTENSIONS)
     )
 

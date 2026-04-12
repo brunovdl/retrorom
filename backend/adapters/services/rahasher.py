@@ -110,7 +110,7 @@ class RAHasherService:
         # RA platform needs an on-disk disc image. RAHasher would just spawn,
         # fail with "Unsupported console for buffer hash: {id}", and return
         # nothing — paying process-spawn overhead per ROM for no result.
-        if file_path.endswith(tuple(COMPRESSED_FILE_EXTENSIONS)):
+        if file_path.lower().endswith(tuple(COMPRESSED_FILE_EXTENSIONS)):
             if platform["ra_id"] in RA_BUFFER_HASH_UNSUPPORTED_IDS:
                 log.debug(
                     f"Skipping {hl('RAHasher', color=LIGHTMAGENTA)} for archived "
