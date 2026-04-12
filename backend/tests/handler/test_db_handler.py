@@ -574,7 +574,7 @@ def test_mark_missing_roms_large_platform_all_missing(platform: Platform):
         )
         roms.append(rom)
 
-    # Keep list has only filler — none of the real ROMs
+    # Keep list has only filler (none of the real ROMs)
     fs_roms_to_keep = [f"filler_{i}.zip" for i in range(501)]
 
     missing = db_rom_handler.mark_missing_roms(platform.id, fs_roms_to_keep)

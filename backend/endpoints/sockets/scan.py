@@ -520,7 +520,7 @@ async def _identify_platform(
         new_firmware=new_firmware,
     )
 
-    # Scanning roms — use cached filesystem data if available
+    # Use cached filesystem data if available
     if fs_roms_cache is not None and platform_slug in fs_roms_cache:
         fs_roms = fs_roms_cache[platform_slug]
     else:

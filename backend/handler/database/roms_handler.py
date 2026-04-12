@@ -938,7 +938,12 @@ class DBRomsHandler(DBBaseHandler):
         roms = (
             session.scalars(
                 select(Rom)
-                .options(selectinload(Rom.platform))
+                .options(
+                    selectinload(Rom.platform),
+                    selectinload(Rom.files).options(
+                        joinedload(RomFile.rom).load_only(Rom.fs_path, Rom.fs_name)
+                    ),
+                )
                 .where(
                     and_(
                         Rom.platform_id == platform_id,
