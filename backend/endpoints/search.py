@@ -11,6 +11,7 @@ from handler.metadata import (
     meta_flashpoint_handler,
     meta_igdb_handler,
     meta_launchbox_handler,
+    meta_libretro_handler,
     meta_moby_handler,
     meta_sgdb_handler,
     meta_ss_handler,
@@ -18,6 +19,7 @@ from handler.metadata import (
 from handler.metadata.flashpoint_handler import FlashpointRom
 from handler.metadata.igdb_handler import IGDBRom
 from handler.metadata.launchbox_handler.types import LaunchboxRom
+from handler.metadata.libretro_handler import LibretroRom
 from handler.metadata.moby_handler import MobyGamesRom
 from handler.metadata.sgdb_handler import SGDBRom
 from handler.metadata.ss_handler import SSRom
@@ -195,8 +197,13 @@ async def search_rom(
     async def get_sgdb_rom(name: str) -> tuple[str, SGDBRom]:
         return name, await meta_sgdb_handler.get_details_by_names([name])
 
-    sgdb_roms = await asyncio.gather(
-        *[get_sgdb_rom(name) for name in list(merged_dict.keys())]
+    async def get_libretro_rom(name: str) -> tuple[str, LibretroRom]:
+        return name, await meta_libretro_handler.get_rom(name, rom.platform.slug)
+
+    merged_names = list(merged_dict.keys())
+    sgdb_roms, libretro_roms = await asyncio.gather(
+        asyncio.gather(*[get_sgdb_rom(name) for name in merged_names]),
+        asyncio.gather(*[get_libretro_rom(name) for name in merged_names]),
     )
 
     for name, sgdb_rom in sgdb_roms:
@@ -205,6 +212,14 @@ async def search_rom(
                 **merged_dict[name],
                 "sgdb_id": sgdb_rom.get("sgdb_id", ""),
                 "sgdb_url_cover": sgdb_rom.get("url_cover", ""),
+            }
+
+    for name, libretro_rom in libretro_roms:
+        if libretro_rom["libretro_id"]:
+            merged_dict[name] = {
+                **merged_dict[name],
+                "libretro_id": libretro_rom.get("libretro_id", ""),
+                "libretro_url_cover": libretro_rom.get("url_cover", ""),
             }
 
     matched_roms: list = list(merged_dict.values())

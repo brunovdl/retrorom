@@ -23,6 +23,7 @@ type MatchedSource = {
     | "Screenscraper"
     | "Flashpoint"
     | "Launchbox"
+    | "Libretro"
     | "SteamGridDB";
   logo_path: string;
 };
@@ -52,6 +53,7 @@ const isMobyFiltered = ref(true);
 const isSSFiltered = ref(true);
 const isFlashpointFiltered = ref(true);
 const isLaunchboxFiltered = ref(true);
+const isLibretroFiltered = ref(true);
 
 const computedAspectRatio = computed(() => {
   return galleryViewStore.getAspectRatio({
@@ -97,6 +99,11 @@ function toggleSourceFilter(source: MatchedSource["name"]) {
     heartbeat.value.METADATA_SOURCES.LAUNCHBOX_API_ENABLED
   ) {
     isLaunchboxFiltered.value = !isLaunchboxFiltered.value;
+  } else if (
+    source == "Libretro" &&
+    heartbeat.value.METADATA_SOURCES.LIBRETRO_API_ENABLED
+  ) {
+    isLibretroFiltered.value = !isLibretroFiltered.value;
   }
 
   filteredMatchedRoms.value = matchedRoms.value.filter((rom) => {
@@ -105,7 +112,8 @@ function toggleSourceFilter(source: MatchedSource["name"]) {
       (rom.moby_id && isMobyFiltered.value) ||
       (rom.ss_id && isSSFiltered.value) ||
       (rom.flashpoint_id && isFlashpointFiltered.value) ||
-      (rom.launchbox_id && isLaunchboxFiltered.value)
+      (rom.launchbox_id && isLaunchboxFiltered.value) ||
+      (rom.libretro_id && isLibretroFiltered.value)
     ) {
       return true;
     }
@@ -137,7 +145,8 @@ async function searchRom() {
             (rom.moby_id && isMobyFiltered.value) ||
             (rom.ss_id && isSSFiltered.value) ||
             (rom.flashpoint_id && isFlashpointFiltered.value) ||
-            (rom.launchbox_id && isLaunchboxFiltered.value)
+            (rom.launchbox_id && isLaunchboxFiltered.value) ||
+            (rom.libretro_id && isLibretroFiltered.value)
           ) {
             return true;
           }
@@ -209,6 +218,13 @@ function showSources(matchedRom: SearchRom) {
       logo_path: "/assets/scrappers/launchbox.png",
     });
   }
+  if (matchedRom.libretro_url_cover) {
+    sources.value.push({
+      url_cover: matchedRom.libretro_url_cover,
+      name: "Libretro",
+      logo_path: "/assets/scrappers/libretro.png",
+    });
+  }
   if (sources.value.length == 1) {
     selectedCover.value = sources.value[0];
   }
@@ -257,6 +273,7 @@ async function updateRom(selectedRom: SearchRom, urlCover: string | undefined) {
     moby_id: selectedRom.moby_id || null,
     flashpoint_id: selectedRom.flashpoint_id || null,
     launchbox_id: selectedRom.launchbox_id || null,
+    libretro_id: selectedRom.libretro_id || null,
     name: selectedRom.name || null,
     slug: selectedRom.slug || null,
     summary: selectedRom.summary || null,
@@ -267,6 +284,7 @@ async function updateRom(selectedRom: SearchRom, urlCover: string | undefined) {
       selectedRom.moby_url_cover ||
       selectedRom.flashpoint_url_cover ||
       selectedRom.launchbox_url_cover ||
+      selectedRom.libretro_url_cover ||
       null,
   };
 
@@ -482,6 +500,37 @@ onBeforeUnmount(() => {
             @click="toggleSourceFilter('Flashpoint')"
           >
             <v-img src="/assets/scrappers/flashpoint.png" />
+          </v-avatar>
+        </template>
+      </v-tooltip>
+      <v-tooltip
+        location="top"
+        class="tooltip"
+        transition="fade-transition"
+        :text="
+          heartbeat.value.METADATA_SOURCES.LIBRETRO_API_ENABLED
+            ? 'Filter Libretro matches'
+            : 'Libretro source is not enabled'
+        "
+        open-delay="500"
+      >
+        <template #activator="{ props }">
+          <v-avatar
+            v-bind="props"
+            variant="text"
+            class="ml-3 cursor-pointer opacity-40"
+            :class="{
+              'opacity-100':
+                isLibretroFiltered &&
+                heartbeat.value.METADATA_SOURCES.LIBRETRO_API_ENABLED,
+              'cursor-not-allowed':
+                !heartbeat.value.METADATA_SOURCES.LIBRETRO_API_ENABLED,
+            }"
+            size="30"
+            rounded="1"
+            @click="toggleSourceFilter('Libretro')"
+          >
+            <v-img src="/assets/scrappers/libretro.png" />
           </v-avatar>
         </template>
       </v-tooltip>

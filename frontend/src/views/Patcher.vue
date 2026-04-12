@@ -758,6 +758,16 @@ onMounted(async () => {
                               >
                                 <v-img src="/assets/scrappers/hltb.png" />
                               </v-avatar>
+
+                              <v-avatar
+                                v-if="item.raw.libretro_slug"
+                                class="bg-surface"
+                                variant="text"
+                                size="25"
+                                rounded
+                              >
+                                <v-img src="/assets/scrappers/libretro.png" />
+                              </v-avatar>
                             </v-col>
                           </v-row>
                           <v-row v-else class="text-center" no-gutters>

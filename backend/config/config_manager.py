@@ -339,9 +339,11 @@ class ConfigManager:
                 self._raw_config,
                 "scan.priority.artwork",
                 [
+                    "sgdb",
                     "igdb",
                     "moby",
                     "ss",
+                    "libretro",
                     "ra",
                     "launchbox",
                     "gamelist",

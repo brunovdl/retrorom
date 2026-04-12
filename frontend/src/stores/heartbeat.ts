@@ -30,6 +30,7 @@ const defaultHeartbeat: Heartbeat = {
     TGDB_API_ENABLED: false,
     FLASHPOINT_API_ENABLED: false,
     HLTB_API_ENABLED: false,
+    LIBRETRO_API_ENABLED: false,
   },
   FILESYSTEM: {
     FS_PLATFORMS: [],
@@ -168,6 +169,14 @@ export default defineStore("heartbeat", {
           value: "gamelist",
           logo_path: "/assets/scrappers/esde.png",
           disabled: "",
+        },
+        {
+          name: "Libretro",
+          value: "libretro",
+          logo_path: "/assets/scrappers/libretro.png",
+          disabled: !this.value.METADATA_SOURCES?.LIBRETRO_API_ENABLED
+            ? i18n.global.t("scan.disabled-by-admin")
+            : "",
         },
       ];
     },

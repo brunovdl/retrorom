@@ -7,6 +7,7 @@ from handler.metadata.hasheous_handler import HasheousHandler
 from handler.metadata.hltb_handler import HLTBHandler
 from handler.metadata.igdb_handler import IGDBHandler
 from handler.metadata.launchbox_handler.handler import LaunchboxHandler
+from handler.metadata.libretro_handler import LibretroHandler
 from handler.metadata.moby_handler import MobyGamesHandler
 from handler.metadata.ra_handler import RAHandler
 from handler.metadata.sgdb_handler import SGDBBaseHandler
@@ -38,6 +39,7 @@ class TestScanLibraryTask:
         mocker.patch.object(FlashpointHandler, "is_enabled", return_value=False)
         mocker.patch.object(HLTBHandler, "is_enabled", return_value=False)
         mocker.patch.object(TGDBHandler, "is_enabled", return_value=False)
+        mocker.patch.object(LibretroHandler, "is_enabled", return_value=False)
         mocker.patch("tasks.scheduled.scan_library.ENABLE_SCHEDULED_RESCAN", True)
 
         scan_result = MagicMock()

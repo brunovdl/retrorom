@@ -102,6 +102,7 @@ class RomUpdateForm(BaseModel):
     tgdb_id: str | None = Field(default=None, description="TheGamesDB game ID.")
     flashpoint_id: str | None = Field(default=None, description="Flashpoint game ID.")
     hltb_id: str | None = Field(default=None, description="HowLongToBeat game ID.")
+    libretro_id: str | None = Field(default=None, description="Libretro thumbnail ID.")
     raw_igdb_metadata: str | None = Field(
         default=None, description="Raw IGDB metadata as JSON string."
     )
@@ -176,6 +177,7 @@ async def parse_rom_update_form(
     tgdb_id: str | None = Form(default=None),
     flashpoint_id: str | None = Form(default=None),
     hltb_id: str | None = Form(default=None),
+    libretro_id: str | None = Form(default=None),
     raw_igdb_metadata: str | None = Form(default=None),
     raw_moby_metadata: str | None = Form(default=None),
     raw_ss_metadata: str | None = Form(default=None),
@@ -203,6 +205,7 @@ async def parse_rom_update_form(
         "tgdb_id": tgdb_id,
         "flashpoint_id": flashpoint_id,
         "hltb_id": hltb_id,
+        "libretro_id": libretro_id,
         "raw_igdb_metadata": raw_igdb_metadata,
         "raw_moby_metadata": raw_moby_metadata,
         "raw_ss_metadata": raw_ss_metadata,
@@ -1087,6 +1090,7 @@ async def update_rom(
                 "tgdb_id": None,
                 "flashpoint_id": None,
                 "hltb_id": None,
+                "libretro_id": None,
                 "name": rom.fs_name,
                 "summary": "",
                 "url_screenshots": [],
@@ -1166,6 +1170,11 @@ async def update_rom(
             safe_int_or_none(form_data.hltb_id)
             if "hltb_id" in provided_fields
             else rom.hltb_id
+        ),
+        "libretro_id": (
+            form_data.libretro_id or None
+            if "libretro_id" in provided_fields
+            else rom.libretro_id
         ),
     }
 

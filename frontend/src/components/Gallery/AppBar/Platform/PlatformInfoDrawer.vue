@@ -524,6 +524,16 @@ watch(
                 <v-img src="/assets/scrappers/hltb.png" />
               </v-avatar>
             </v-chip>
+            <v-chip
+              v-if="currentPlatform.libretro_slug"
+              class="px-0 ml-1 mt-1"
+              size="small"
+              title="Libretro"
+            >
+              <v-avatar variant="text" class="bg-surface" size="30" rounded="0">
+                <v-img src="/assets/scrappers/libretro.png" />
+              </v-avatar>
+            </v-chip>
           </v-col>
         </v-row>
         <v-row v-else class="mt-2 text-center" no-gutters>

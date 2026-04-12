@@ -113,6 +113,7 @@ const coverImageSource = computed(() => {
     if (hostname === "hasheous.org") return "Hasheous";
     if (hostname === "infinity.unstable.life") return "Flashpoint";
     if (hostname === "howlongtobeat.com") return "HowLongToBeat";
+    if (hostname === "thumbnails.libretro.com") return "Libretro";
 
     return null;
   } catch {

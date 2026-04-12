@@ -12,6 +12,7 @@ export type PlatformSchema = {
     igdb_slug: (string | null);
     moby_slug: (string | null);
     hltb_slug: (string | null);
+    libretro_slug: (string | null);
     custom_name?: (string | null);
     igdb_id?: (number | null);
     sgdb_id?: (number | null);

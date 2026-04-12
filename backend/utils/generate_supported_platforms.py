@@ -1,5 +1,6 @@
 # uv run python -m utils.generate_supported_platforms
 from typing import TypedDict
+from urllib.parse import quote
 
 from handler.metadata import (
     meta_flashpoint_handler,
@@ -7,6 +8,7 @@ from handler.metadata import (
     meta_hltb_handler,
     meta_igdb_handler,
     meta_launchbox_handler,
+    meta_libretro_handler,
     meta_moby_handler,
     meta_ra_handler,
     meta_ss_handler,
@@ -25,6 +27,7 @@ class SupportedPlatform(TypedDict):
     ra_id: int | None
     flashpoint_id: int | None
     hltb_slug: str | None
+    libretro_slug: str | None
 
 
 if __name__ == "__main__":
@@ -41,6 +44,7 @@ if __name__ == "__main__":
         ra_platform = meta_ra_handler.get_platform(slug_lower)
         flashpoint_platform = meta_flashpoint_handler.get_platform(slug_lower)
         hltb_platform = meta_hltb_handler.get_platform(slug_lower)
+        libretro_platform = meta_libretro_handler.get_platform(slug_lower)
 
         supported_platforms[slug_lower] = {
             "name": igdb_platform.get("name", None)
@@ -61,6 +65,7 @@ if __name__ == "__main__":
             "ra_id": ra_platform["ra_id"],
             "flashpoint_id": flashpoint_platform["flashpoint_id"],
             "hltb_slug": hltb_platform.get("hltb_slug", None),
+            "libretro_slug": libretro_platform.get("libretro_slug", None),
         }
 
     # Sort platforms by name field
@@ -113,6 +118,11 @@ if __name__ == "__main__":
             (
                 '<img alt="howlongtobeat logo" src="../../resources/metadata_providers/hltb.png" height="24px" width="24px">'
                 if platform["hltb_slug"]
+                else ""
+            ),
+            (
+                f'<a href="https://thumbnails.libretro.com/{quote(platform["libretro_slug"], safe="")}" target="_blank" rel="noopener noreferrer"><img alt="libretro logo" src="../../resources/metadata_providers/libretro.png" height="24px" width="24px"></a>'
+                if platform["libretro_slug"]
                 else ""
             ),
             " |",

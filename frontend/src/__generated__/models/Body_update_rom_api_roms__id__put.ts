@@ -17,6 +17,7 @@ export type Body_update_rom_api_roms__id__put = {
     tgdb_id?: (string | null);
     flashpoint_id?: (string | null);
     hltb_id?: (string | null);
+    libretro_id?: (string | null);
     raw_igdb_metadata?: (string | null);
     raw_moby_metadata?: (string | null);
     raw_ss_metadata?: (string | null);

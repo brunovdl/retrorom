@@ -228,6 +228,7 @@ class RomSchema(BaseModel):
     flashpoint_id: str | None
     hltb_id: int | None
     gamelist_id: str | None
+    libretro_id: str | None
 
     platform_id: int
     platform_slug: str

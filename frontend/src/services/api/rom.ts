@@ -447,6 +447,7 @@ async function updateRom({
     ["hasheous_id", toFormIdValue(rom.hasheous_id)],
     ["tgdb_id", toFormIdValue(rom.tgdb_id)],
     ["hltb_id", toFormIdValue(rom.hltb_id)],
+    ["libretro_id", toFormIdValue(rom.libretro_id)],
   ];
 
   if (rom.manual_metadata) {
