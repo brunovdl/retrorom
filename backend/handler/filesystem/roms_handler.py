@@ -448,8 +448,9 @@ class FSRomsHandler(FSHandler):
                 ra_platform = meta_ra_handler.get_platform(rom.platform_slug)
                 if ra_platform and ra_platform["ra_id"]:
                     rom_ra_h = await RAHasherService().calculate_hash(
-                        ra_platform["ra_id"],
+                        ra_platform,
                         f"{abs_fs_path}/{rom.fs_name}/*",
+                        rom.fs_extension,
                     )
 
             for f_path, file_name in iter_files(
@@ -539,8 +540,9 @@ class FSRomsHandler(FSHandler):
                 ra_platform = meta_ra_handler.get_platform(rom.platform_slug)
                 if ra_platform and ra_platform["ra_id"]:
                     rom_ra_h = await RAHasherService().calculate_hash(
-                        ra_platform["ra_id"],
+                        ra_platform,
                         f"{abs_fs_path}/{rom.fs_name}",
+                        rom.fs_extension,
                     )
 
             file_hash = FileHash(

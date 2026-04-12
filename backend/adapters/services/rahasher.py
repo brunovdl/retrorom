@@ -1,8 +1,8 @@
 import asyncio
-import os
 import re
 
 from handler.metadata.base_handler import UniversalPlatformSlug as UPS
+from handler.metadata.ra_handler import RAGamesPlatform
 from logger.formatter import LIGHTMAGENTA
 from logger.formatter import highlight as hl
 from logger.logger import log
@@ -101,31 +101,31 @@ class RAHasherError(Exception): ...
 class RAHasherService:
     """Service to calculate RetroAchievements hashes using RAHasher."""
 
-    async def calculate_hash(self, platform_id: int, file_path: str) -> str:
-        from handler.metadata.ra_handler import RA_ID_TO_SLUG
-
+    async def calculate_hash(
+        self, platform: RAGamesPlatform, file_path: str, file_extension: str
+    ) -> str:
         # Skip the subprocess entirely when the file is an archive and the
         # RA platform needs an on-disk disc image. RAHasher would just spawn,
         # fail with "Unsupported console for buffer hash: {id}", and return
         # nothing — paying process-spawn overhead per ROM for no result.
-        ext = os.path.splitext(file_path)[1].lower()
-        if ext in COMPRESSED_FILE_EXTENSIONS:
+        normalized_ext = f".{file_extension.lstrip('.').lower()}"
+        if normalized_ext in COMPRESSED_FILE_EXTENSIONS:
             unsupported_ids = {
                 PLATFORM_SLUG_TO_RETROACHIEVEMENTS_ID[ups]
                 for ups in RA_BUFFER_HASH_UNSUPPORTED
             }
-            if platform_id in unsupported_ids:
+            if platform["ra_id"] in unsupported_ids:
                 log.debug(
                     f"Skipping {hl('RAHasher', color=LIGHTMAGENTA)} for archived "
-                    f"{hl(RA_ID_TO_SLUG[platform_id])} file {hl(file_path.split('/')[-1])}: "
+                    f"{hl(platform['slug'], color=LIGHTMAGENTA)} file {hl(file_path.split('/')[-1])}: "
                     f"disc-based platforms don't support buffer hashing"
                 )
                 return ""
 
         log.debug(
-            f"Executing {hl('RAHasher', color=LIGHTMAGENTA)} for platform: {hl(RA_ID_TO_SLUG[platform_id])} - file: {hl(file_path.split('/')[-1])}"
+            f"Executing {hl('RAHasher', color=LIGHTMAGENTA)} for platform: {hl(platform['slug'], color=LIGHTMAGENTA)} - file: {hl(file_path.split('/')[-1])}"
         )
-        args = (str(platform_id), file_path)
+        args = (str(platform["ra_id"]), file_path)
 
         try:
             proc = await asyncio.create_subprocess_exec(
@@ -154,14 +154,14 @@ class RAHasherService:
         file_hash = (await proc.stdout.read()).decode("utf-8").strip()
         if not file_hash:
             log.error(
-                f"RAHasher returned an empty hash for file {file_path} (platform ID: {platform_id})"
+                f"RAHasher returned an empty hash for file {file_path} (platform ID: {platform['ra_id']})"
             )
             return ""
 
         match = RAHASHER_VALID_HASH_REGEX.search(file_hash)
         if not match:
             log.error(
-                f"RAHasher returned invalid hash {file_hash} for file {file_path} (platform ID: {platform_id}"
+                f"RAHasher returned invalid hash {file_hash} for file {file_path} (platform ID: {platform['ra_id']})"
             )
             return ""
 
