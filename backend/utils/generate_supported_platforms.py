@@ -1,5 +1,6 @@
 # uv run python -m utils.generate_supported_platforms
 from typing import TypedDict
+from urllib.parse import quote
 
 from handler.metadata import (
     meta_flashpoint_handler,
@@ -120,7 +121,7 @@ if __name__ == "__main__":
                 else ""
             ),
             (
-                f'<a href="https://thumbnails.libretro.com/{platform["libretro_slug"]}" target="_blank" rel="noopener noreferrer"><img alt="libretro logo" src="../../resources/metadata_providers/libretro.png" height="24px" width="24px"></a>'
+                f'<a href="https://thumbnails.libretro.com/{quote(platform["libretro_slug"], safe="")}" target="_blank" rel="noopener noreferrer"><img alt="libretro logo" src="../../resources/metadata_providers/libretro.png" height="24px" width="24px"></a>'
                 if platform["libretro_slug"]
                 else ""
             ),

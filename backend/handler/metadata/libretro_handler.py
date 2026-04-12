@@ -1,12 +1,10 @@
 import hashlib
 import os
 import re
-from sys import platform
 from typing import Final, NotRequired, TypedDict
 
 from adapters.services.libretro_thumbnails import LibretroThumbnailsService
 from adapters.services.libretro_thumbnails_types import LibretroArtType
-from handler.metadata.igdb_handler import IGDB_PLATFORM_LIST
 from logger.logger import log
 
 from .base_handler import MetadataHandler
@@ -42,7 +40,7 @@ def libretro_id_for(filename: str) -> str:
     for the same matched art, fits in the `roms.libretro_id` column (40 chars
     in a varchar(64)).
     """
-    return hashlib.sha1(filename.encode("utf-8")).hexdigest()
+    return hashlib.sha1(filename.encode("utf-8"), usedforsecurity=False).hexdigest()
 
 
 class LibretroHandler(MetadataHandler):

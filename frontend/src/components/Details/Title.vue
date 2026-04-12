@@ -329,10 +329,11 @@ const hashMatches = computed(() => {
           </v-chip>
         </a>
         <a
-          v-if="platform && rom.libretro_id"
+          v-if="platform?.libretro_slug && rom.libretro_id"
           style="text-decoration: none; color: inherit"
-          :href="`https://thumbnails.libretro.com/${platform.libretro_slug}/Named_Boxarts/${rom.fs_name_no_ext}.png`"
+          :href="`https://thumbnails.libretro.com/${encodeURIComponent(platform.libretro_slug)}/Named_Boxarts/${encodeURIComponent(rom.fs_name_no_ext)}.png`"
           target="_blank"
+          rel="noopener noreferrer"
           class="mr-1"
         >
           <v-chip class="px-0 mt-1" size="small" title="Libretro match">

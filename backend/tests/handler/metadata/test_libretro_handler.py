@@ -59,7 +59,7 @@ def test_get_platform_supported_platform(handler: LibretroHandler):
 
 
 def test_get_platform_unsupported_platform(handler: LibretroHandler):
-    assert handler.get_platform("not-a-real-platform") is None
+    assert handler.get_platform("not-a-real-platform")["libretro_slug"] is None
 
 
 def test_platform_list_uses_ups_keys():
