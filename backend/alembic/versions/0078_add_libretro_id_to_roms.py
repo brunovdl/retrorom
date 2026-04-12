@@ -1,7 +1,7 @@
 """Add libretro_id to roms
 
-Revision ID: 0077_add_libretro_id_to_roms
-Revises: 0076_play_sessions
+Revision ID: 0078_add_libretro_id_to_roms
+Revises: 0077_add_platform_fs_name_index
 Create Date: 2026-04-11 00:00:00.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "0077_add_libretro_id_to_roms"
-down_revision = "0076_play_sessions"
+revision = "0078_add_libretro_id_to_roms"
+down_revision = "0077_add_platform_fs_name_index"
 branch_labels = None
 depends_on = None
 

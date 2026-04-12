@@ -1,7 +1,7 @@
 """Add composite index on (platform_id, fs_name) for roms table
 
-Revision ID: 0078_add_platform_fs_name_index
-Revises: 0077_add_libretro_id_to_roms
+Revision ID: 0077_add_platform_fs_name_index
+Revises: 0076_play_sessions
 Create Date: 2026-04-11 00:00:00.000000
 
 """
@@ -9,8 +9,8 @@ Create Date: 2026-04-11 00:00:00.000000
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "0078_add_platform_fs_name_index"
-down_revision = "0077_add_libretro_id_to_roms"
+revision = "0077_add_platform_fs_name_index"
+down_revision = "0076_play_sessions"
 branch_labels = None
 depends_on = None
 
