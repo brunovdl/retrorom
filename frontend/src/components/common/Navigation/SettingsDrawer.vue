@@ -80,8 +80,9 @@ function onClose() {
       'my-2': mdAndUp || (smAndDown && activeSettingsDrawer),
       'ml-2': (mdAndUp && activeSettingsDrawer) || smAndDown,
       'drawer-mobile': smAndDown,
+      'unset-height': mdAndUp,
     }"
-    class="bg-surface pa-1 unset-height"
+    class="bg-surface pa-1"
     rounded
     :border="0"
     @keydown.esc="onClose"
