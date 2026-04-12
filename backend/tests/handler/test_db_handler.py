@@ -506,7 +506,7 @@ def test_mark_missing_roms_large_platform(platform: Platform):
         )
     )
 
-    # Build a keep list with >500 entries to trigger the flip-based path.
+    # Build a large keep list to verify mark_missing_roms() handles many entries.
     # Only rom_present.zip actually exists in DB; the rest are just filler.
     fs_roms_to_keep = ["rom_present.zip"] + [f"filler_{i}.zip" for i in range(501)]
 

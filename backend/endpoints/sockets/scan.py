@@ -451,7 +451,6 @@ async def _identify_platform(
     socket_manager: socketio.AsyncRedisManager,
     scan_stats: ScanStats,
     calculate_hashes: bool = True,
-    fs_roms_cache: dict[str, list[FSRom]] | None = None,
 ) -> ScanStats:
     # Stop the scan if the flag is set
     if redis_client.get(STOP_SCAN_FLAG):
@@ -520,15 +519,11 @@ async def _identify_platform(
         new_firmware=new_firmware,
     )
 
-    # Use cached filesystem data if available
-    if fs_roms_cache is not None and platform_slug in fs_roms_cache:
-        fs_roms = fs_roms_cache[platform_slug]
-    else:
-        try:
-            fs_roms = await fs_rom_handler.get_roms(platform)
-        except RomsNotFoundException as e:
-            log.error(e)
-            return scan_stats
+    try:
+        fs_roms = await fs_rom_handler.get_roms(platform)
+    except RomsNotFoundException as e:
+        log.error(e)
+        return scan_stats
 
     if len(fs_roms) == 0:
         log.warning(
@@ -657,15 +652,12 @@ async def scan_platforms(
     if MetadataSource.HLTB in metadata_sources:
         meta_hltb_handler.initialize()
 
-    # Precalculate total platforms and ROMs, caching filesystem reads
-    # so _identify_platform() doesn't have to re-read the same directories
-    fs_roms_cache: dict[str, list[FSRom]] = {}
     total_roms = 0
     for platform_slug in fs_platforms:
         try:
-            fs_roms = await fs_rom_handler.get_roms(Platform(fs_slug=platform_slug))
-            fs_roms_cache[platform_slug] = fs_roms
-            total_roms += len(fs_roms)
+            total_roms += await fs_rom_handler.count_roms(
+                Platform(fs_slug=platform_slug)
+            )
         except RomsNotFoundException as e:
             log.error(e)
 
@@ -709,7 +701,6 @@ async def scan_platforms(
                 socket_manager=socket_manager,
                 scan_stats=scan_stats,
                 calculate_hashes=calculate_hashes,
-                fs_roms_cache=fs_roms_cache,
             )
 
         missed_platforms = db_platform_handler.mark_missing_platforms(fs_platforms)
