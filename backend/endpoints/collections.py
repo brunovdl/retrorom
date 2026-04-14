@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import File, Form, HTTPException
 from fastapi import Path as PathVar
 from fastapi import Query, Request, UploadFile, status
+from pydantic import BaseModel as PydanticBaseModel
 
 from decorators.auth import protected_route
 from endpoints.responses.collection import (
@@ -471,6 +472,68 @@ async def update_collection(
         id, cleaned_data, parsed_rom_ids
     )
 
+    return CollectionSchema.model_validate(updated_collection)
+
+
+class CollectionRomsPayload(PydanticBaseModel):
+    rom_ids: list[int]
+
+
+@protected_route(router.post, "/{id}/roms", [Scope.COLLECTIONS_WRITE])
+async def add_roms_to_collection(
+    request: Request,
+    id: int,
+    payload: CollectionRomsPayload,
+) -> CollectionSchema:
+    """Atomically add ROMs to a collection without replacing the full list.
+
+    Args:
+        request (Request): Fastapi Request object
+        id (int): Collection id
+        payload (CollectionRomsPayload): ROM IDs to add
+
+    Returns:
+        CollectionSchema: Updated collection
+    """
+    collection = db_collection_handler.get_collection(id)
+    if not collection:
+        raise CollectionNotFoundInDatabaseException(id)
+
+    if collection.user_id != request.user.id:
+        raise CollectionPermissionError(id)
+
+    updated_collection = db_collection_handler.add_roms_to_collection(
+        id, payload.rom_ids
+    )
+    return CollectionSchema.model_validate(updated_collection)
+
+
+@protected_route(router.delete, "/{id}/roms", [Scope.COLLECTIONS_WRITE])
+async def remove_roms_from_collection(
+    request: Request,
+    id: int,
+    payload: CollectionRomsPayload,
+) -> CollectionSchema:
+    """Atomically remove ROMs from a collection without replacing the full list.
+
+    Args:
+        request (Request): Fastapi Request object
+        id (int): Collection id
+        payload (CollectionRomsPayload): ROM IDs to remove
+
+    Returns:
+        CollectionSchema: Updated collection
+    """
+    collection = db_collection_handler.get_collection(id)
+    if not collection:
+        raise CollectionNotFoundInDatabaseException(id)
+
+    if collection.user_id != request.user.id:
+        raise CollectionPermissionError(id)
+
+    updated_collection = db_collection_handler.remove_roms_from_collection(
+        id, payload.rom_ids
+    )
     return CollectionSchema.model_validate(updated_collection)
 
 

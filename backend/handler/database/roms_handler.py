@@ -1066,7 +1066,9 @@ class DBRomsHandler(DBBaseHandler):
         user_id: int,
         session: Session = None,  # type: ignore
     ) -> RomUser:
-        return session.merge(RomUser(rom_id=rom_id, user_id=user_id))
+        rom_user = session.merge(RomUser(rom_id=rom_id, user_id=user_id))
+        session.flush()
+        return rom_user
 
     @begin_session
     def get_rom_user(

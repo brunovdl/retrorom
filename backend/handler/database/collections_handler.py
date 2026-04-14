@@ -1,6 +1,6 @@
 import functools
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import delete, insert, literal, or_, select, update
@@ -143,6 +143,66 @@ class DBCollectionsHandler(DBBaseHandler):
                             for rom_id in valid_rom_ids
                         ],
                     )
+
+        return session.scalar(query.filter_by(id=id).limit(1))
+
+    @begin_session
+    @with_roms
+    def add_roms_to_collection(
+        self,
+        id: int,
+        rom_ids: list[int],
+        query: Query = None,  # type: ignore
+        session: Session = None,  # type: ignore
+    ) -> Collection:
+        if rom_ids:
+            valid_rom_ids = set(
+                session.scalars(select(Rom.id).where(Rom.id.in_(rom_ids))).all()
+            )
+            existing_ids = set(
+                session.scalars(
+                    select(CollectionRom.rom_id).where(
+                        CollectionRom.collection_id == id
+                    )
+                ).all()
+            )
+            new_ids = valid_rom_ids - existing_ids
+            if new_ids:
+                session.execute(
+                    insert(CollectionRom),
+                    [{"collection_id": id, "rom_id": rom_id} for rom_id in new_ids],
+                )
+                session.execute(
+                    update(Collection)
+                    .where(Collection.id == id)
+                    .values(updated_at=datetime.now(timezone.utc))
+                    .execution_options(synchronize_session="evaluate")
+                )
+
+        return session.scalar(query.filter_by(id=id).limit(1))
+
+    @begin_session
+    @with_roms
+    def remove_roms_from_collection(
+        self,
+        id: int,
+        rom_ids: list[int],
+        query: Query = None,  # type: ignore
+        session: Session = None,  # type: ignore
+    ) -> Collection:
+        if rom_ids:
+            session.execute(
+                delete(CollectionRom).where(
+                    CollectionRom.collection_id == id,
+                    CollectionRom.rom_id.in_(rom_ids),
+                )
+            )
+            session.execute(
+                update(Collection)
+                .where(Collection.id == id)
+                .values(updated_at=datetime.now(timezone.utc))
+                .execution_options(synchronize_session="evaluate")
+            )
 
         return session.scalar(query.filter_by(id=id).limit(1))
 
