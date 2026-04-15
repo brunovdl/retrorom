@@ -206,12 +206,6 @@ def _should_get_rom_files(
         newly_added (bool): Whether the rom is newly added.
         roms_ids (list[int]): List of selected roms to be scanned.
     """
-    # Get hash calculation setting from config
-    calculate_hashes = not cm.get_config().SKIP_HASH_CALCULATION
-
-    # Skip file processing entirely if hashes are disabled (except for HASHES scan type)
-    if not calculate_hashes and scan_type != ScanType.HASHES:
-        return False
 
     return bool(
         newly_added
