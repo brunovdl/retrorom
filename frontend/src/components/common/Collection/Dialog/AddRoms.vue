@@ -17,7 +17,8 @@ const { mdAndUp } = useDisplay();
 const show = ref(false);
 const romsStore = storeRoms();
 const collectionsStore = storeCollections();
-const selectedCollection = ref<ReturnType<typeof collectionsStore.getCollection>>();
+const selectedCollection =
+  ref<ReturnType<typeof collectionsStore.getCollection>>();
 const roms = ref<SimpleRom[]>([]);
 const emitter = inject<Emitter<Events>>("emitter");
 emitter?.on("showAddToCollectionDialog", (romsToAdd) => {

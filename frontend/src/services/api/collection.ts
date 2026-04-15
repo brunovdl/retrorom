@@ -162,7 +162,10 @@ async function addRomsToCollection(collectionId: number, romIds: number[]) {
   });
 }
 
-async function removeRomsFromCollection(collectionId: number, romIds: number[]) {
+async function removeRomsFromCollection(
+  collectionId: number,
+  romIds: number[],
+) {
   return api.delete<Collection>(`/collections/${collectionId}/roms`, {
     data: { rom_ids: romIds },
   });

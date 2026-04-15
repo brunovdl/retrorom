@@ -1,16 +1,14 @@
 from datetime import timedelta
 
 import pytest
-from fastapi import status
-
 from config import OAUTH_ACCESS_TOKEN_EXPIRE_SECONDS
+from fastapi import status
 from handler.auth import oauth_handler
-from handler.database import db_collection_handler, db_rom_handler, db_user_handler
+from handler.database import db_collection_handler, db_rom_handler
 from models.collection import Collection
 from models.platform import Platform
 from models.rom import Rom
-from models.user import Role, User
-
+from models.user import User
 
 # ---------------------------------------------------------------------------
 # Fixtures
