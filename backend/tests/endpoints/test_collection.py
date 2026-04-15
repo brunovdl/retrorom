@@ -1,8 +1,9 @@
 from datetime import timedelta
 
 import pytest
-from config import OAUTH_ACCESS_TOKEN_EXPIRE_SECONDS
 from fastapi import status
+
+from config import OAUTH_ACCESS_TOKEN_EXPIRE_SECONDS
 from handler.auth import oauth_handler
 from handler.database import db_collection_handler, db_rom_handler
 from models.collection import Collection
