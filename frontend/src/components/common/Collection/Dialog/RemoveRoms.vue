@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CollectionSchema } from "@/__generated__";
 import type { Emitter } from "mitt";
 import { inject, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -19,8 +20,7 @@ const { mdAndUp } = useDisplay();
 const show = ref(false);
 const romsStore = storeRoms();
 const collectionsStore = storeCollections();
-const selectedCollection =
-  ref<ReturnType<typeof collectionsStore.getCollection>>();
+const selectedCollection = ref<CollectionSchema>();
 const roms = ref<SimpleRom[]>([]);
 const router = useRouter();
 const emitter = inject<Emitter<Events>>("emitter");

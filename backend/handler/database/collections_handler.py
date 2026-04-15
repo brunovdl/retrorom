@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import delete, insert, literal, or_, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import (
     Query,
     QueryableAttribute,
@@ -168,10 +169,18 @@ class DBCollectionsHandler(DBBaseHandler):
             )
             new_ids = valid_rom_ids - existing_ids
             if new_ids:
-                session.execute(
-                    insert(CollectionRom),
-                    [{"collection_id": id, "rom_id": rom_id} for rom_id in new_ids],
-                )
+                try:
+                    with session.begin_nested():
+                        session.execute(
+                            insert(CollectionRom),
+                            [
+                                {"collection_id": id, "rom_id": rom_id}
+                                for rom_id in new_ids
+                            ],
+                        )
+                except IntegrityError:
+                    # Concurrent request inserted the same rows; data is consistent
+                    pass
                 session.execute(
                     update(Collection)
                     .where(Collection.id == id)
@@ -191,18 +200,19 @@ class DBCollectionsHandler(DBBaseHandler):
         session: Session = None,  # type: ignore
     ) -> Collection:
         if rom_ids:
-            session.execute(
+            result = session.execute(
                 delete(CollectionRom).where(
                     CollectionRom.collection_id == id,
                     CollectionRom.rom_id.in_(rom_ids),
                 )
             )
-            session.execute(
-                update(Collection)
-                .where(Collection.id == id)
-                .values(updated_at=datetime.now(timezone.utc))
-                .execution_options(synchronize_session="evaluate")
-            )
+            if result.rowcount > 0:
+                session.execute(
+                    update(Collection)
+                    .where(Collection.id == id)
+                    .values(updated_at=datetime.now(timezone.utc))
+                    .execution_options(synchronize_session="evaluate")
+                )
 
         return session.scalar(query.filter_by(id=id).limit(1))
 
