@@ -318,8 +318,7 @@ onBeforeUnmount(() => {
                       !rom.ss_url_cover &&
                       !rom.sgdb_url_cover &&
                       !rom.launchbox_url_cover &&
-                      !rom.flashpoint_url_cover &&
-                      !rom.physical_url_cover)
+                      !rom.flashpoint_url_cover)
                   "
                   class="translucent"
                   :class="
