@@ -79,12 +79,18 @@ RUN apk add --no-cache \
     git \
     linux-headers \
     make \
-    zlib-dev
+    zlib-dev \
+    bash
 
 ARG RALIBRETRO_VERSION=1.8.3
 
 RUN git clone --recursive --branch "${RALIBRETRO_VERSION}" --depth 1 https://github.com/RetroAchievements/RALibretro.git && \
     cd ./RALibretro && \
+    sed -i '22a #include <ctime>' ./src/Util.h && \
+    sed -i '6a #include <unistd.h>' \
+        ./src/libchdr/deps/zlib-1.3.1/gzlib.c \
+        ./src/libchdr/deps/zlib-1.3.1/gzread.c \
+        ./src/libchdr/deps/zlib-1.3.1/gzwrite.c &&\
     make HAVE_CHD=1 -f ./Makefile.RAHasher
 
 
