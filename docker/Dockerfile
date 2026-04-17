@@ -90,7 +90,7 @@ RUN git clone --recursive --branch "${RALIBRETRO_VERSION}" --depth 1 https://git
     sed -i '6a #include <unistd.h>' \
         ./src/libchdr/deps/zlib-1.3.1/gzlib.c \
         ./src/libchdr/deps/zlib-1.3.1/gzread.c \
-        ./src/libchdr/deps/zlib-1.3.1/gzwrite.c &&\
+        ./src/libchdr/deps/zlib-1.3.1/gzwrite.c && \
     make HAVE_CHD=1 -f ./Makefile.RAHasher
 
 
