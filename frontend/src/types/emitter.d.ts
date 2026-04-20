@@ -25,6 +25,7 @@ export type Events = {
   showSearchCoverDialog: { term: string; platformId?: number };
   updateUrlCover: string;
   showEditRomDialog: SimpleRom;
+  showRefreshMetadataDialog: SimpleRom;
   showCopyDownloadLinkDialog: string;
   showDeleteRomDialog: SimpleRom[];
   showUploadRomDialog: Platform | null;

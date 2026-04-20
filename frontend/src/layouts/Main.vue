@@ -17,6 +17,7 @@ import DeleteRomDialog from "@/components/common/Game/Dialog/DeleteRom.vue";
 import EditRomDialog from "@/components/common/Game/Dialog/EditRom.vue";
 import MatchRomDialog from "@/components/common/Game/Dialog/MatchRom.vue";
 import NoteDialog from "@/components/common/Game/Dialog/NoteDialog.vue";
+import RefreshMetadataDialog from "@/components/common/Game/Dialog/RefreshMetadata.vue";
 import ShowQRCodeDialog from "@/components/common/Game/Dialog/ShowQRCode.vue";
 import MainAppBar from "@/components/common/Navigation/MainAppBar.vue";
 import NewVersionDialog from "@/components/common/NewVersionDialog.vue";
@@ -76,6 +77,7 @@ onBeforeMount(async () => {
   <LoadingDialog />
   <MatchRomDialog />
   <EditRomDialog />
+  <RefreshMetadataDialog />
   <SearchCoverDialog />
   <AddRomsToCollectionDialog />
   <RemoveRomsFromCollectionDialog />
