@@ -1,3 +1,4 @@
+import asyncio
 import binascii
 import json
 from base64 import b64encode
@@ -54,6 +55,7 @@ from handler.metadata import (
     meta_igdb_handler,
     meta_launchbox_handler,
     meta_moby_handler,
+    meta_playmatch_handler,
     meta_ra_handler,
     meta_ss_handler,
 )
@@ -73,6 +75,16 @@ from .files import router as files_router
 from .manual import router as manual_router
 from .notes import router as notes_router
 from .upload import router as upload_router
+
+# The event loop only holds weak refs to tasks; hold strong refs until they finish.
+_background_tasks: set[asyncio.Task[Any]] = set()
+
+
+def _fire_and_forget(coro: Any) -> None:
+    task = asyncio.create_task(coro)
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)
+
 
 router = APIRouter(
     prefix="/roms",
@@ -1439,6 +1451,8 @@ async def update_rom(
     rom = db_rom_handler.get_rom(id)
     if not rom:
         raise RomNotFoundInDatabaseException(id)
+
+    _fire_and_forget(meta_playmatch_handler.submit_manual_match_suggestion(rom))
 
     return DetailedRomSchema.from_orm_with_request(rom, request)
 

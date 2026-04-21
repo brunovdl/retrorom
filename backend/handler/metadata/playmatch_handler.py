@@ -9,13 +9,30 @@ from fastapi import HTTPException, status
 from config import PLAYMATCH_API_ENABLED
 from handler.metadata.base_handler import MetadataHandler
 from logger.logger import log
-from models.rom import RomFile
+from models.rom import Rom, RomFile
 from utils import get_version
 from utils.context import ctx_httpx_client
 
 
 class PlaymatchProvider(str, Enum):
     IGDB = "IGDB"
+
+
+# (rom attribute, provider tag). Playmatch drops unknown tags server-side.
+_PLAYMATCH_PROVIDER_TAGS: tuple[tuple[str, str], ...] = (
+    ("igdb_id", "IGDB"),
+    ("moby_id", "MOBY_GAMES"),
+    ("ss_id", "SCREENSCRAPER"),
+    ("ra_id", "RETRO_ACHIEVEMENTS"),
+    ("launchbox_id", "LAUNCHBOX"),
+    ("hasheous_id", "HASHEOUS"),
+    ("tgdb_id", "TGDB"),
+    ("flashpoint_id", "FLASHPOINT"),
+    ("hltb_id", "HOWLONGTOBEAT"),
+    ("libretro_id", "LIBRETRO"),
+    ("sgdb_id", "STEAMGRIDDB"),
+    ("gamelist_id", "GAMELIST"),
+)
 
 
 class GameMatchType(str, Enum):
@@ -49,6 +66,7 @@ class PlaymatchHandler(MetadataHandler):
         self.base_url = "https://playmatch.retrorealm.dev/api"
         self.identify_url = f"{self.base_url}/identify/ids"
         self.healthcheck_url = f"{self.base_url}/health"
+        self.suggestion_url = f"{self.base_url}/suggestion/external/game"
 
     @classmethod
     def is_enabled(cls) -> bool:
@@ -163,3 +181,51 @@ class PlaymatchHandler(MetadataHandler):
                 igdb_id = int(provider_game_id)
 
         return PlaymatchRomMatch(igdb_id=igdb_id)
+
+    async def submit_manual_match_suggestion(self, rom: Rom) -> None:
+        """Fire-and-forget suggestion POST. No-ops if disabled or unmatched; never raises."""
+        try:
+            if not self.is_enabled():
+                return
+
+            mappings = [
+                {"provider": tag, "providerId": str(getattr(rom, attr))}
+                for attr, tag in _PLAYMATCH_PROVIDER_TAGS
+                if getattr(rom, attr, None) not in (None, "")
+            ]
+            if not mappings:
+                return
+
+            first_file = next(
+                (f for f in rom.files if f.file_size_bytes > 0),
+                None,
+            )
+            if first_file is not None:
+                md5 = first_file.md5_hash
+                sha1 = first_file.sha1_hash
+                file_name = first_file.file_name
+                file_size: int | None = first_file.file_size_bytes
+            else:
+                md5 = rom.md5_hash
+                sha1 = rom.sha1_hash
+                file_name = rom.fs_name
+                file_size = rom.fs_size_bytes or None
+
+            payload = {
+                "md5": md5,
+                "sha1": sha1,
+                "sha256": None,
+                "fileName": file_name,
+                "fileSize": file_size,
+                "mappings": mappings,
+            }
+
+            httpx_client = ctx_httpx_client.get()
+            await httpx_client.post(
+                self.suggestion_url,
+                json=payload,
+                headers={"user-agent": f"RomM/{get_version()}"},
+                timeout=30,
+            )
+        except Exception:
+            log.debug("Playmatch match suggestion failed (ignored)", exc_info=True)
