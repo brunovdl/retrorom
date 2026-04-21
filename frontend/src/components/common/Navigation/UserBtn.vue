@@ -13,7 +13,7 @@ const { smAndDown } = useDisplay();
 </script>
 <template>
   <v-avatar
-    class="pointer"
+    class="pointer transparent"
     :size="smAndDown ? 35 : 40"
     :class="{
       active: navigationStore.activeSettingsDrawer,
