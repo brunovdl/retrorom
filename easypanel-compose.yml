@@ -1,0 +1,88 @@
+version: "3.8"
+
+# ============================================================
+#  RomM - Compose para EasyPanel
+#  Repositório: https://github.com/brunovdl/retrorom
+#  Build a partir do Dockerfile de produção: docker/Dockerfile
+# ============================================================
+
+volumes:
+  mysql_data:
+  romm_resources:
+  romm_redis_data:
+  romm_assets:
+  romm_config:
+
+services:
+
+  # ──────────────────────────────────────────
+  #  Banco de dados (MariaDB)
+  # ──────────────────────────────────────────
+  romm-db:
+    image: mariadb:latest
+    container_name: romm-db
+    restart: unless-stopped
+    environment:
+      - MARIADB_ROOT_PASSWORD=${DB_ROOT_PASSWD}
+      - MARIADB_DATABASE=${DB_NAME:-romm}
+      - MARIADB_USER=${DB_USER:-romm-user}
+      - MARIADB_PASSWORD=${DB_PASSWD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 30s
+      start_interval: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ──────────────────────────────────────────
+  #  Aplicação RomM
+  #  Build a partir do repositório GitHub
+  # ──────────────────────────────────────────
+  romm:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: full-image          # inclui EmulatorJS + RuffleRS para jogar no browser
+    container_name: romm
+    restart: unless-stopped
+    environment:
+      # Banco de dados
+      - DB_HOST=romm-db
+      - DB_NAME=${DB_NAME:-romm}
+      - DB_USER=${DB_USER:-romm-user}
+      - DB_PASSWD=${DB_PASSWD}
+
+      # Segurança
+      - ROMM_AUTH_SECRET_KEY=${ROMM_AUTH_SECRET_KEY}
+
+      # ✅ Screenscraper (capas dos jogos)
+      - SCREENSCRAPER_USER=${SCREENSCRAPER_USER}
+      - SCREENSCRAPER_PASSWORD=${SCREENSCRAPER_PASSWORD}
+
+      # Provedores extras (gratuitos, sem chave)
+      - HASHEOUS_API_ENABLED=true
+      - PLAYMATCH_API_ENABLED=true
+
+      # Emulação via browser (não desabilitar!)
+      - DISABLE_EMULATOR_JS=false
+      - DISABLE_RUFFLE_RS=false
+
+      # App
+      - ROMM_BASE_PATH=/romm
+      - LOGLEVEL=INFO
+    volumes:
+      - romm_resources:/romm/resources     # capas e artes baixadas
+      - romm_redis_data:/redis-data         # cache de tarefas
+      - romm_assets:/romm/assets           # saves, states, etc.
+      - romm_config:/romm/config           # config.yml opcional
+      # ⚠️  Adicione seu volume de ROMs:
+      # - /seu/caminho/na/vps/roms:/romm/library
+    ports:
+      - "8080:8080"
+    depends_on:
+      romm-db:
+        condition: service_healthy
+        restart: true
